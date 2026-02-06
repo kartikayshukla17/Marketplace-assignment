@@ -24,7 +24,7 @@ export const createListingSchema = z.object({
                 return val;
             },
             z.number().positive('Price must be greater than 0').optional()
-        ),
+        ).optional(),
     status: z.enum(['DRAFT', 'ACTIVE', 'PAUSED']),
 }).refine((data) => {
     // For FIXED listings, price is required and must be positive

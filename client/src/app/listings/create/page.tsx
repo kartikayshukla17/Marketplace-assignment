@@ -56,7 +56,7 @@ function CreateListingContent() {
         watch,
         formState: { errors },
     } = useForm<CreateListingInput>({
-        resolver: zodResolver(createListingSchema),
+        resolver: zodResolver(createListingSchema) as any,
         defaultValues: {
             title: '',
             description: '',
