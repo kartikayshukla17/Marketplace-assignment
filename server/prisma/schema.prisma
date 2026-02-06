@@ -1,0 +1,125 @@
+// Prisma Schema for Marketplace Module (MongoDB)
+// Following official Prisma MongoDB documentation
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+}
+
+enum OrderStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ListingType {
+  FIXED
+  QUOTE
+}
+
+// Models
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          Role      @default(USER)
+  isBlocked     Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations (Virtual - for Prisma Client API)
+  listings        Listing[]
+  ordersAsBuyer   Order[]   @relation("BuyerOrders")
+  ordersAsSeller  Order[]   @relation("SellerOrders")
+}
+
+model Category {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  listings    Listing[]
+}
+
+model Listing {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  
+  // Pricing Configuration
+  listingType ListingType   @default(FIXED)
+  price       Float?        // Optional: null for QUOTE listings
+  currency    String        @default("USD")
+  
+  status      ListingStatus @default(DRAFT)
+  images      String[]
+  
+  isDeleted   Boolean       @default(false)
+  isBlocked   Boolean       @default(false)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  sellerId    String        @db.ObjectId
+  seller      User          @relation(fields: [sellerId], references: [id])
+  
+  categoryId  String?       @db.ObjectId
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  
+  orders      Order[]
+
+  // Indexes for Performance
+  @@index([status, categoryId])
+  @@index([sellerId])
+  @@index([createdAt])
+}
+
+model Order {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  
+  status      OrderStatus @default(REQUESTED)
+  offerPrice  Float?      // Null for QUOTE listings until seller provides quote
+  message     String?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  buyerId     String      @db.ObjectId
+  buyer       User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  
+  listingId   String      @db.ObjectId
+  listing     Listing     @relation(fields: [listingId], references: [id])
+
+  // Denormalized for fast "My Sales" queries
+  sellerId    String      @db.ObjectId
+  seller      User        @relation("SellerOrders", fields: [sellerId], references: [id])
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
