@@ -2,7 +2,7 @@
 // Handles HTTP requests for category endpoints
 
 import { Request, Response, NextFunction } from 'express';
-import * as categoryService from '../services/categoryService';
+import * as categoryService from '../services/categoryService.js';
 
 /**
  * GET /categories

@@ -2,7 +2,7 @@
 // Business logic for Listings, including soft delete handling
 
 import { prisma } from '../lib/prisma.js';
-import { ListingStatus, ListingType } from '../../generated/prisma/client.js';
+import { ListingStatus, ListingType } from '../types/enums.js';
 import { sanitizeText } from '../utils/sanitize.js';
 
 // ==========================================

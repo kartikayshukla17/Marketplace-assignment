@@ -2,7 +2,7 @@
 // Business logic for Orders with lifecycle management
 
 import { prisma } from '../lib/prisma.js';
-import { OrderStatus } from '../../generated/prisma/client.js';
+import { OrderStatus } from '../types/enums.js';
 import { sanitizeText } from '../utils/sanitize.js';
 
 // ==========================================

@@ -6,6 +6,7 @@ import { catchAsync } from '../utils/catchAsync.js';
 import { AppError } from '../utils/AppError.js';
 import { createListingSchema, updateListingSchema } from '../validations/index.js';
 import * as listingService from '../services/listingService.js';
+import { ListingType, ListingStatus } from '../types/enums.js';
 
 // GET /api/listings (Public - Active listings only)
 export const getListings = catchAsync(async (req: Request, res: Response) => {
@@ -57,6 +58,8 @@ export const createListing = catchAsync(async (req: Request, res: Response) => {
 
     const listing = await listingService.createListing({
         ...validation.data,
+        listingType: validation.data.listingType as ListingType,
+        status: validation.data.status as ListingStatus | undefined,
         sellerId: req.user!.id,
     });
 
@@ -77,7 +80,11 @@ export const updateListing = catchAsync(async (req: Request, res: Response) => {
     const listing = await listingService.updateListing(
         id,
         req.user!.id,
-        validation.data
+        {
+            ...validation.data,
+            listingType: validation.data.listingType as ListingType | undefined,
+            status: validation.data.status as ListingStatus | undefined
+        }
     );
 
     if (!listing) {

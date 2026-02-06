@@ -6,7 +6,7 @@ import { catchAsync } from '../utils/catchAsync.js';
 import { AppError } from '../utils/AppError.js';
 import { createOrderSchema, updateOrderStatusSchema } from '../validations/index.js';
 import * as orderService from '../services/orderService.js';
-import { OrderStatus } from '../../generated/prisma/client.js';
+import { OrderStatus } from '../types/enums.js';
 
 // GET /api/orders/buyer (Protected - Orders I sent as buyer)
 export const getMyBuyerOrders = catchAsync(async (req: Request, res: Response) => {
