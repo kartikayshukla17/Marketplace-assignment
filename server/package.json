@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "db:push": "npx prisma db push",
-    "db:generate": "npx prisma generate"
+    "db:generate": "npx prisma generate",
+    "postinstall": "rm -rf node_modules/.prisma/client && npx prisma generate"
   },
   "keywords": [],
   "author": "",
