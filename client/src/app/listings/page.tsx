@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, ChevronDown, LayoutGrid, ArrowLeft, X, ShoppingBag } from 'lucide-react';
+import { ListingSkeleton } from '@/components/ui/skeleton';
 
 // ==========================================
 // CONSTANTS
@@ -208,9 +209,7 @@ export default function ListingsPage() {
 
                 {/* Listings Grid */}
                 {isLoading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-                    </div>
+                    <ListingSkeleton />
                 ) : error ? (
                     <p className="text-center py-20 text-red-400">Failed to load listings</p>
                 ) : filteredListings.length === 0 ? (

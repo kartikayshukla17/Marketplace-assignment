@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { TableSkeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
                                     />
                                 </div>
                                 {usersLoading ? (
-                                    <p className="text-zinc-400">Loading users...</p>
+                                    <TableSkeleton rows={10} />
                                 ) : (
                                     <>
                                         <div className="overflow-x-auto">

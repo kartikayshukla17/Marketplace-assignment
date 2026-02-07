@@ -23,12 +23,13 @@ import {
 import { toast } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { LogOut, LayoutDashboard, ShoppingBag, Package, PlusCircle, ArrowRight, Trash2, MoreVertical, Pencil } from 'lucide-react';
+import { ListingSkeleton, StatsSkeleton } from '@/components/ui/skeleton';
 
 function DashboardContent() {
     const router = useRouter();
     const { data: userData } = useGetMeQuery();
-    const { data: listingsData } = useGetMyListingsQuery();
-    const { data: ordersData } = useGetMySellerOrdersQuery();
+    const { data: listingsData, isLoading: listingsLoading } = useGetMyListingsQuery();
+    const { data: ordersData, isLoading: ordersLoading } = useGetMySellerOrdersQuery();
     const [logout] = useLogoutMutation();
     const [deleteListing, { isLoading: isDeleting }] = useDeleteListingMutation();
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
@@ -203,21 +204,24 @@ function DashboardContent() {
                         </div>
 
                         {/* Stats Row */}
-                        {/* Stats Row */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Listings</span>
-                                <span className="text-3xl font-bold text-white">{listings.length}</span>
+                        {ordersLoading ? (
+                            <StatsSkeleton />
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
+                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Listings</span>
+                                    <span className="text-3xl font-bold text-white">{listings.length}</span>
+                                </div>
+                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
+                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Pending Orders</span>
+                                    <span className="text-3xl font-bold text-amber-500">{pendingOrders.length}</span>
+                                </div>
+                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
+                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Orders</span>
+                                    <span className="text-3xl font-bold text-emerald-500">{orders.length}</span>
+                                </div>
                             </div>
-                            <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Pending Orders</span>
-                                <span className="text-3xl font-bold text-amber-500">{pendingOrders.length}</span>
-                            </div>
-                            <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Orders</span>
-                                <span className="text-3xl font-bold text-emerald-500">{orders.length}</span>
-                            </div>
-                        </div>
+                        )}
 
                         {/* Recent Listings Preview */}
                         <div>
@@ -231,7 +235,11 @@ function DashboardContent() {
                                     View All
                                 </Button>
                             </div>
-                            {listings.length === 0 ? (
+                            {listingsLoading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <ListingSkeleton />
+                                </div>
+                            ) : listings.length === 0 ? (
                                 <div className="text-center py-8 bg-zinc-900/30 rounded-2xl border border-zinc-800 border-dashed">
                                     <p className="text-zinc-500 text-sm">No listings yet</p>
                                 </div>
@@ -273,7 +281,9 @@ function DashboardContent() {
                             )}
                         </div>
 
-                        {listings.length === 0 ? (
+                        {listingsLoading ? (
+                            <ListingSkeleton />
+                        ) : listings.length === 0 ? (
                             <div className="min-h-[300px] flex flex-col items-center justify-center p-8 bg-zinc-800/20 border border-zinc-700/50 rounded-2xl">
                                 <div className="p-4 bg-zinc-800 rounded-full mb-4">
                                     <LayoutDashboard size={32} className="text-zinc-500" />
