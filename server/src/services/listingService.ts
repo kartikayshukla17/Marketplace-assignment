@@ -135,7 +135,7 @@ export const createListing = async (data: CreateListingData) => {
             description: sanitizedDescription,
             categoryId: data.categoryId,
             listingType,
-            price: data.price || null,  // Allow null for QUOTE listings
+            price: data.price || null,
             currency: data.currency || 'USD',
             status: data.status || ListingStatus.DRAFT,
             images: data.images || [],

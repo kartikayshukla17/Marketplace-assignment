@@ -333,9 +333,19 @@ function UserDetailsDialog({ user, open, onClose }: { user: any; open: boolean; 
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className={`px-2 py-1 rounded text-xs ${listing.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300' : listing.status === 'DRAFT' ? 'bg-zinc-700 text-zinc-300' : 'bg-amber-500/20 text-amber-300'}`}>
-                                                        {listing.status}
-                                                    </span>
+                                                    {listing.isDeleted ? (
+                                                        <span className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300 font-medium border border-red-500/20">
+                                                            DELETED
+                                                        </span>
+                                                    ) : listing.isBlocked ? (
+                                                        <span className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300 font-medium border border-red-500/20">
+                                                            BLOCKED
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`px-2 py-1 rounded text-xs ${listing.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300' : listing.status === 'DRAFT' ? 'bg-zinc-700 text-zinc-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                                                            {listing.status}
+                                                        </span>
+                                                    )}
                                                     <p className="text-sm text-zinc-300 mt-1">
                                                         {listing.price ? `$${listing.price}` : 'Quote'}
                                                     </p>

@@ -101,8 +101,12 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 
 // POST /api/auth/logout
 export const logout = catchAsync(async (req: Request, res: Response) => {
+    const isProduction = config.nodeEnv === 'production';
+
     res.cookie(config.cookieName, '', {
         httpOnly: true,
+        secure: isProduction, // Must match login cookie settings
+        sameSite: isProduction ? 'none' : 'lax', // Must match login cookie settings
         expires: new Date(0),
     });
 
