@@ -50,7 +50,7 @@ Each user has 6 pre-created listings (4 fixed-price, 2 quote-based).
 | **Buyer** | Browse listings, send purchase requests, accept/reject quotes |
 | **Admin** | View all data, block/unblock users and listings |
 
-*User can be a buyer as well as seller.
+*User can be a buyer as well as a seller.
 
 ### Additional Features
 - Search listings by title
