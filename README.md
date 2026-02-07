@@ -6,8 +6,8 @@ A full-stack marketplace application where users can offer services/products and
 
 | Service | URL |
 |---------|-----|
-| **Frontend** (Vercel) | [https://marketplace-frontend.vercel.app](https://marketplace-frontend.vercel.app) |
-| **Backend** (Render) | [https://marketplace-api.onrender.com](https://marketplace-api.onrender.com) |
+| **Frontend** (Vercel) | [https://marketplace-assignment-bsc1.vercel.app/ |
+| **Backend** (Render) | [https://marketplace-backend-iexd.onrender.com/health |
 
 > **Note:** Backend may take 30-60 seconds to wake up on first request (Render free tier).
 
