@@ -132,7 +132,7 @@ NEXT_PUBLIC_API_URL="http://localhost:5001/api"
 
 ### 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/kartikayshukla17/Marketplace-assignment
 cd "Marketplace Module"
 ```
 
@@ -207,12 +207,14 @@ npx prisma db seed
 
 ## Security Features
 
-- JWT authentication with HTTP-only cookies
-- Password hashing with bcrypt (12 rounds)
-- Role-based access control (RBAC)
-- Input validation with Zod schemas
-- API rate limiting per endpoint
-- Protected routes on frontend
+JWT Authentication - Secure, stateless authentication with HTTP-only cookies
+Protected Routes (Frontend & Backend) - Comprehensive access control on both client and server
+Role-Based Access Control (RBAC) - Strict permission checks for Buyer, Seller, and Admin roles
+Secure Cookies - SameSite=None and Secure attributes for cross-site safety
+Rate Limiting - Per-IP limits on API endpoints to prevent abuse
+Input Validation - Strict Zod schema validation for all incoming data
+Password Hashing - Secure bcrypt hashing (12 rounds)
+Security Headers - Helmet.js protection against common vulnerabilities
 
 ---
 
