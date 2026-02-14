@@ -207,14 +207,14 @@ npx prisma db seed
 
 ## Security Features
 
-JWT Authentication - Secure, stateless authentication with HTTP-only cookies
-Protected Routes (Frontend & Backend) - Comprehensive access control on both client and server
-Role-Based Access Control (RBAC) - Strict permission checks for Buyer, Seller, and Admin roles
-Secure Cookies - SameSite=None and Secure attributes for cross-site safety
-Rate Limiting - Per-IP limits on API endpoints to prevent abuse
-Input Validation - Strict Zod schema validation for all incoming data
-Password Hashing - Secure bcrypt hashing (12 rounds)
-Security Headers - Helmet.js protection against common vulnerabilities
+JWT Authentication - Secure, stateless authentication with HTTP-only cookies <br>
+Protected Routes (Frontend & Backend) - Comprehensive access control on both client and server <br>
+Role-Based Access Control (RBAC) - Strict permission checks for Buyer, Seller, and Admin roles <br>
+Secure Cookies - SameSite=None and Secure attributes for cross-site safety <br>
+Rate Limiting - Per-IP limits on API endpoints to prevent abuse <br>
+Input Validation - Strict Zod schema validation for all incoming data <br>
+Password Hashing - Secure bcrypt hashing (12 rounds) <br>
+Security Headers - Helmet.js protection against common vulnerabilities <br>
 
 ---
 
