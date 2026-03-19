@@ -53,7 +53,7 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                         </h2>
                     </Link>
                     
-                    <nav className="hidden md:flex items-center gap-8">
+                    <nav className="hidden lg:flex items-center gap-8">
                         {navLinks.map((link) => (
                             <Link 
                                 key={link.href}
@@ -69,7 +69,7 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                 <div className="flex flex-1 justify-end gap-3 sm:gap-6 items-center">
                     {/* Search Bar - Hidden on small mobile, grows on Tablet/Desktop */}
                     {isListingsBrowser && setSearchQuery && (
-                        <div className="hidden sm:flex flex-1 max-w-md ml-4">
+                        <div className="hidden lg:flex flex-1 max-w-md ml-4">
                             <div className="flex w-full items-stretch rounded-lg h-10 bg-slate-200 dark:bg-primary/5 border border-transparent focus-within:border-primary/30 transition-all">
                                 <div className="text-slate-500 dark:text-primary/60 flex items-center justify-center pl-4">
                                     <Search className="w-4 h-4" />
@@ -101,7 +101,7 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                                         <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[100px]">{user.name}</p>
                                         <p className="text-[9px] text-slate-500 uppercase tracking-widest leading-none mt-1 font-bold">{user.role}</p>
                                     </div>
-                                    <button onClick={handleLogout} className="hidden sm:block text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10">
+                                    <button onClick={handleLogout} className="hidden lg:block text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10">
                                         <LogOut size={16} />
                                     </button>
                                 </>
@@ -112,10 +112,10 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                             )}
                         </div>
 
-                        {/* Hamburger Button */}
+                        {/* Hamburger Button - Now visible on lg (up to 1024px) */}
                         <button 
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-all"
+                            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-all"
                         >
                             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                         </button>
@@ -123,18 +123,18 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                 </div>
             </div>
 
-            {/* Mobile Sidebar Menu (Drawer) */}
+            {/* Mobile Sidebar Menu (Drawer) - Now visible on lg (up to 1024px) */}
             {isMenuOpen && (
-                <div className="md:hidden fixed inset-0 z-[100] animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-background-dark/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}></div>
-                    <div className="absolute top-0 right-0 h-full w-[280px] bg-background-light dark:bg-[#1c2012] border-l border-primary/10 p-6 shadow-2xl animate-in slide-in-from-right duration-300">
+                <div className="lg:hidden fixed inset-0 z-[100] animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-background-dark/80 backdrop-blur-md" onClick={() => setIsMenuOpen(false)}></div>
+                    <div className="absolute top-0 right-0 h-full w-[300px] bg-[#1c2012] border-l border-primary/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-300">
                         <div className="flex items-center justify-between mb-10">
-                            <div className="flex items-center gap-3">
+                            <Link href="/listings" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
                                     <span className="font-bold text-lg leading-none">V</span>
                                 </div>
-                                <span className="text-xl font-bold dark:text-white">Verchool</span>
-                            </div>
+                                <span className="text-xl font-bold text-white font-nexa-style">Verchool</span>
+                            </Link>
                             <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-primary transition-colors">
                                 <X size={24} />
                             </button>
