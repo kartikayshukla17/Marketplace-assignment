@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { ShoppingBag, ArrowLeft, ExternalLink, X, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Navbar } from '@/components/Navbar';
 
 // ==========================================
 // STATUS BADGE COMPONENT
@@ -14,14 +15,14 @@ import { toast } from 'sonner';
 const StatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
         REQUESTED: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-        ACCEPTED: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-        COMPLETED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-        REJECTED: 'bg-red-500/10 text-red-400 border-red-500/20',
-        CANCELLED: 'bg-zinc-400/10 text-zinc-300 border-zinc-400/20',
+        ACCEPTED: 'bg-primary/20 text-primary border-primary/20',
+        COMPLETED: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+        REJECTED: 'bg-red-500/10 text-red-500 border-red-500/20',
+        CANCELLED: 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700',
     };
 
     return (
-        <div className={`px-3 py-1 rounded-full text-xs font-medium border ${styles[status] || styles.CANCELLED}`}>
+        <div className={`px-4 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest border ${styles[status] || styles.CANCELLED}`}>
             {status}
         </div>
     );
@@ -67,80 +68,77 @@ function BuyerOrdersContent() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-1/4 -translate-y-1/2 w-[800px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 relative z-10 layout-container flex grow flex-col">
+            <Navbar />
 
-            {/* Header */}
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-zinc-300 hover:text-white transition-colors">
-                            <ArrowLeft size={20} />
-                        </Link>
-                        <h1 className="text-xl font-bold tracking-tight">My Purchase Requests</h1>
-                    </div>
-                    <Link href="/listings">
-                        <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent gap-2">
-                            Browse Listings
-                        </Button>
+            <div className="border-b border-primary/5 bg-background-light/40 dark:bg-[#1c2012]/40 animate-fade-in-up stagger-1">
+                <div className="container mx-auto px-6 py-6 flex flex-col gap-2 relative">
+                    <Link href="/dashboard" className="text-slate-500 hover:text-primary transition-colors inline-flex items-center gap-2 text-sm font-bold w-fit uppercase tracking-widest">
+                        <ArrowLeft size={16} /> Back to Dashboard
                     </Link>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style">My Purchase Requests</h1>
+                        <Link href="/listings">
+                            <Button className="bg-primary/20 text-primary hover:bg-primary hover:text-background-dark font-bold font-nexa-style gap-2 hidden md:flex h-12 px-6">
+                                Browse Listings
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
-            </header>
+            </div>
 
-            {/* Main Content */}
-            <main className="container mx-auto px-6 py-8 relative z-10">
+            <main className="container mx-auto px-6 py-10 relative z-10 flex-1 animate-fade-in-up stagger-2">
                 {orders.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mb-4 border border-zinc-700">
-                            <ShoppingBag size={32} className="text-zinc-500" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-200/20 dark:bg-[#252a1a]/40 rounded-2xl border border-primary/5 border-dashed">
+                        <div className="w-16 h-16 bg-slate-200 dark:bg-background-dark rounded-full flex items-center justify-center mb-6">
+                            <ShoppingBag size={32} className="text-slate-500" />
                         </div>
-                        <h3 className="text-lg font-medium text-white">No purchase requests yet</h3>
-                        <p className="text-zinc-300 mt-1 max-w-sm">
+                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style mb-2">No purchase requests yet</h3>
+                        <p className="text-slate-500 mt-1 max-w-sm font-medium">
                             When you send purchase requests to sellers, they will appear here.
                         </p>
-                        <Link href="/listings" className="mt-6">
-                            <Button className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 border-0">
+                        <Link href="/listings" className="mt-8">
+                            <Button className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold h-12 px-8">
                                 Browse Listings
                             </Button>
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid gap-6">
                         {orders.map((order) => (
-                            <Card key={order.id} className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm overflow-hidden hover:border-zinc-600 transition-colors">
-                                <CardHeader className="flex flex-row items-start justify-between pb-4 border-b border-zinc-700/50 bg-zinc-800/20">
+                            <Card key={order.id} className="bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 abstract-bg shadow-sm">
+                                <CardHeader className="flex flex-row items-start justify-between pb-6 p-8 border-b border-primary/5">
                                     <div className="space-y-1 flex-1">
-                                        <CardTitle className="text-lg font-semibold text-white">
+                                        <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style mb-2">
                                             {order.listing?.title || 'Unknown Listing'}
                                         </CardTitle>
-                                        <CardDescription className="text-zinc-300 flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-zinc-600" />
-                                            Seller: <span className="text-zinc-200">{order.seller?.name}</span>
+                                        <CardDescription className="text-slate-500 flex items-center gap-2 font-bold text-xs uppercase tracking-widest">
+                                            <span className="w-2 h-2 rounded-full bg-primary" />
+                                            Seller: <span className="text-slate-700 dark:text-slate-300 normal-case tracking-normal">{order.seller?.name}</span>
                                         </CardDescription>
                                     </div>
                                     <StatusBadge status={order.status} />
                                 </CardHeader>
 
-                                <CardContent className="pt-6">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                        <div className="flex items-center gap-6">
+                                <CardContent className="p-8">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div className="flex items-center gap-10">
                                             <div>
-                                                <p className="text-sm text-zinc-400 mb-1">Order Price</p>
-                                                <p className="text-2xl font-bold text-white">
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Order Price</p>
+                                                <p className="text-4xl font-black text-slate-900 dark:text-white font-nexa-style">
                                                     ${order.offerPrice?.toLocaleString() || '0'}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-zinc-400 mb-1">Requested</p>
-                                                <p className="text-white">
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Requested</p>
+                                                <p className="text-slate-900 dark:text-slate-200 font-bold">
                                                     {new Date(order.createdAt).toLocaleDateString()}
                                                 </p>
                                             </div>
@@ -150,15 +148,15 @@ function BuyerOrdersContent() {
                                         <div className="flex flex-col gap-3 flex-wrap">
                                             {/* QUOTE listing - Quote Received - Accept/Reject */}
                                             {order.status === 'REQUESTED' && order.listing?.listingType === 'QUOTE' && order.offerPrice && (
-                                                <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4">
-                                                    <p className="text-sm text-indigo-300 mb-3 font-medium">
+                                                <div className="bg-slate-200/50 dark:bg-background-dark border border-primary/20 rounded-xl p-5">
+                                                    <p className="text-sm text-primary mb-4 font-bold flex items-center gap-2 uppercase tracking-widest">
                                                         ✨ Quote received! Review and decide:
                                                     </p>
-                                                    <div className="flex gap-3">
+                                                    <div className="flex gap-4">
                                                         <Button
                                                             onClick={() => handleAcceptQuote(order.id)}
                                                             disabled={updating}
-                                                            className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
+                                                            className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold gap-2 px-6 h-12"
                                                         >
                                                             <CheckCircle2 size={18} />
                                                             {updating ? 'Accepting...' : 'Accept Quote'}
@@ -167,7 +165,7 @@ function BuyerOrdersContent() {
                                                             variant="outline"
                                                             onClick={() => handleRejectQuote(order.id)}
                                                             disabled={updating}
-                                                            className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent gap-2"
+                                                            className="border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold gap-2 px-6 h-12 bg-transparent transition-colors"
                                                         >
                                                             <XCircle size={18} />
                                                             {updating ? 'Cancelling...' : 'Decline Quote'}
@@ -178,55 +176,54 @@ function BuyerOrdersContent() {
 
                                             {/* QUOTE listing - Waiting for seller to provide quote */}
                                             {order.status === 'REQUESTED' && order.listing?.listingType === 'QUOTE' && !order.offerPrice && (
-                                                <>
-                                                    <p className="text-sm text-amber-400">⏳ Waiting for seller to provide a quote...</p>
+                                                <div className="flex flex-col items-end gap-3">
+                                                    <p className="text-sm text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-lg">⏳ Waiting for seller to provide a quote...</p>
                                                     <Button
                                                         onClick={() => handleCancelOrder(order.id)}
                                                         disabled={isCancelling}
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 w-fit"
+                                                        className="gap-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 w-fit font-bold"
                                                     >
-                                                        <X size={14} />
+                                                        <X size={16} />
                                                         Cancel Request
                                                     </Button>
-                                                </>
+                                                </div>
                                             )}
 
                                             {/* FIXED listing - Waiting for seller to accept */}
                                             {order.status === 'REQUESTED' && order.listing?.listingType === 'FIXED' && (
-                                                <>
-                                                    <p className="text-sm text-amber-400">⏳ Waiting for seller to accept your request...</p>
+                                                <div className="flex flex-col items-end gap-3">
+                                                    <p className="text-sm text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-lg">⏳ Waiting for seller to accept your request...</p>
                                                     <Button
                                                         onClick={() => handleCancelOrder(order.id)}
                                                         disabled={isCancelling}
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 w-fit"
+                                                        className="gap-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 w-fit font-bold"
                                                     >
-                                                        <X size={14} />
+                                                        <X size={16} />
                                                         Cancel Request
                                                     </Button>
-                                                </>
+                                                </div>
                                             )}
                                             {order.status === 'ACCEPTED' && (
-                                                <p className="text-sm text-indigo-400">✅ Seller accepted! Awaiting completion.</p>
+                                                <p className="text-sm text-primary font-bold bg-primary/10 px-4 py-2 rounded-lg">✅ Seller accepted! Awaiting completion.</p>
                                             )}
                                             {order.status === 'COMPLETED' && (
-                                                <p className="text-sm text-emerald-400">Order completed successfully!</p>
+                                                <p className="text-sm text-emerald-500 font-bold bg-emerald-500/10 px-4 py-2 rounded-lg">Order completed successfully!</p>
                                             )}
                                             {order.status === 'REJECTED' && (
-                                                <p className="text-sm text-red-400">Seller declined this request.</p>
+                                                <p className="text-sm text-red-500 font-bold bg-red-500/10 px-4 py-2 rounded-lg">Seller declined this request.</p>
                                             )}
 
                                             {order.listing?.id && (
-                                                <Link href={`/listings/${order.listing.id}`}>
+                                                <Link href={`/listings/${order.listing.id}`} className="block">
                                                     <Button
                                                         variant="outline"
-                                                        size="sm"
-                                                        className="gap-1 border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-700 bg-transparent"
+                                                        className="border-primary/20 text-slate-700 dark:text-slate-200 hover:border-primary w-full md:w-auto h-12 bg-transparent font-bold transition-colors gap-2"
                                                     >
-                                                        <ExternalLink size={14} />
+                                                        <ExternalLink size={16} />
                                                         View Listing
                                                     </Button>
                                                 </Link>
@@ -236,8 +233,8 @@ function BuyerOrdersContent() {
 
                                     {/* Order message if any */}
                                     {order.message && (
-                                        <div className="mt-4 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                                            <p className="text-sm text-zinc-300 italic">"{order.message}"</p>
+                                        <div className="mt-8 p-5 bg-slate-200/50 dark:bg-black/20 rounded-xl border border-primary/5">
+                                            <p className="text-sm text-slate-600 dark:text-slate-300 italic font-medium">"{order.message}"</p>
                                         </div>
                                     )}
                                 </CardContent>

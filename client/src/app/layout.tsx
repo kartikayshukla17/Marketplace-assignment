@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ApiStatus } from "@/components/ApiStatus";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Marketplace",
+  title: "Verchool B2B",
   description: "B2B Marketplace - Buy and Sell Services",
 };
 
@@ -26,10 +21,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-900 text-white`}
+        className={`${manrope.variable} antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display relative min-h-screen selection:bg-primary selection:text-black`}
       >
+        <div className="fixed inset-0 noise-bg pointer-events-none z-50 mix-blend-overlay opacity-20"></div>
         <Providers>
           <ApiStatus />
           {children}

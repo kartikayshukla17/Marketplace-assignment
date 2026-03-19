@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useGetMeQuery, useLogoutMutation } from '@/store/authApi';
+import { useGetMeQuery } from '@/store/authApi';
 import { useGetMyListingsQuery, useDeleteListingMutation } from '@/store/listingsApi';
-import { useGetMySellerOrdersQuery } from '@/store/ordersApi';
+import { useGetMySellerOrdersQuery, useGetMyBuyerOrdersQuery } from '@/store/ordersApi';
+import { useGetMyActivitiesQuery } from '@/store/activityApi';
+import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,23 +24,39 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { LogOut, LayoutDashboard, ShoppingBag, Package, PlusCircle, ArrowRight, Trash2, MoreVertical, Pencil } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, PlusCircle, ArrowRight, Trash2, Pencil, Activity, AlertCircle, CheckCircle2, DollarSign, Clock } from 'lucide-react';
 import { ListingSkeleton, StatsSkeleton } from '@/components/ui/skeleton';
+
+// Activity item date formatter
+const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+};
 
 function DashboardContent() {
     const router = useRouter();
     const { data: userData } = useGetMeQuery();
     const { data: listingsData, isLoading: listingsLoading } = useGetMyListingsQuery();
-    const { data: ordersData, isLoading: ordersLoading } = useGetMySellerOrdersQuery();
-    const [logout] = useLogoutMutation();
+    const { data: sellerOrdersData, isLoading: sellerOrdersLoading } = useGetMySellerOrdersQuery();
+    const { data: buyerOrdersData, isLoading: buyerOrdersLoading } = useGetMyBuyerOrdersQuery();
+    const { data: activityData, isLoading: activityLoading } = useGetMyActivitiesQuery({ limit: 10 });
+    
     const [deleteListing, { isLoading: isDeleting }] = useDeleteListingMutation();
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('overview');
 
     const user = userData?.data;
     const listings = listingsData?.data?.listings || [];
-    const orders = ordersData?.data?.orders || [];
-    const pendingOrders = orders.filter((o) => o.status === 'REQUESTED');
+    const sellerOrders = sellerOrdersData?.data?.orders || [];
+    const buyerOrders = buyerOrdersData?.data?.orders || [];
+    const activities = activityData?.data?.activities || [];
 
     // Redirect admins to admin dashboard
     useEffect(() => {
@@ -47,11 +65,61 @@ function DashboardContent() {
         }
     }, [userData, router]);
 
-    const handleLogout = async () => {
-        await logout();
-        toast.success('Logged out');
-        router.push('/login');
-    };
+    // Data Computation
+    const {
+        sellerRevenue,
+        sellerPendingAction,
+        sellerCompleted,
+        activeListingsCount
+    } = useMemo(() => {
+        let rev = 0;
+        let pending = 0;
+        let completed = 0;
+        
+        sellerOrders.forEach(o => {
+            if (o.status === 'COMPLETED') {
+                rev += o.offerPrice || 0;
+                completed++;
+            }
+            if (o.status === 'REQUESTED') {
+                pending++;
+            }
+        });
+
+        return {
+            sellerRevenue: rev,
+            sellerPendingAction: sellerOrders.filter(o => o.status === 'REQUESTED'),
+            sellerCompleted: completed,
+            activeListingsCount: listings.filter(l => l.status === 'ACTIVE').length
+        };
+    }, [sellerOrders, listings]);
+
+    const {
+        buyerSpent,
+        buyerPendingAction,
+        buyerCompleted
+    } = useMemo(() => {
+        let spent = 0;
+        let pending = 0;
+        let completed = 0;
+        
+        buyerOrders.forEach(o => {
+            if (o.status === 'COMPLETED') {
+                spent += o.offerPrice || 0;
+                completed++;
+            }
+            if (o.status === 'REQUESTED' || o.status === 'ACCEPTED') {
+                pending++;
+            }
+        });
+
+        return {
+            buyerSpent: spent,
+            buyerPendingAction: buyerOrders.filter(o => o.status === 'REQUESTED' || o.status === 'ACCEPTED'),
+            buyerCompleted: completed
+        };
+    }, [buyerOrders]);
+
 
     const confirmDelete = async () => {
         if (!listingToDelete) return;
@@ -59,327 +127,297 @@ function DashboardContent() {
             await deleteListing(listingToDelete).unwrap();
             toast.success('Listing deleted');
             setListingToDelete(null);
+            // If they deleted the last listing, they might want to switch tabs, but we'll leave them on 'listings'
         } catch (error) {
             toast.error('Failed to delete listing');
         }
     };
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 relative z-10 layout-container flex grow flex-col">
+            <Navbar />
 
-            {/* Header */}
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/20">
-                            <LayoutDashboard size={18} className="text-white" />
-                        </div>
-                        <h1 className="text-xl font-bold tracking-tight">Marketplace</h1>
-                    </div>
-
-                    <nav className="hidden md:flex items-center gap-6 mx-6">
-                        <Link href="/listings" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 rounded-lg">
-                            Browse
-                        </Link>
+            {/* Quick Actions Bar */}
+            <div className="bg-slate-200/50 dark:bg-[#1c2012] border-b border-primary/10">
+                <div className="container mx-auto px-6 py-4 flex flex-wrap gap-4 items-center justify-between">
+                    <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style hidden sm:block">Command Center</h2>
+                    <div className="flex flex-wrap gap-3">
                         {user?.role !== 'ADMIN' && (
-                            <>
-                                <Link href="/listings/create" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 rounded-lg">
-                                    Create Listing
-                                </Link>
-                                <Link href="/dashboard/orders" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 rounded-lg">
-                                    My Sales
-                                </Link>
-                                <Link href="/dashboard/my-orders" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors hover:bg-white/5 px-3 py-2 rounded-lg">
-                                    My Orders
-                                </Link>
-                            </>
+                            <Link href="/listings/create">
+                                <Button size="sm" className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold gap-2">
+                                    <PlusCircle size={16} /> Create Listing
+                                </Button>
+                            </Link>
                         )}
-                    </nav>
-
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm text-zinc-300 hidden md:inline-block">Welcome, <span className="text-zinc-100 font-medium">{user?.name}</span></span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleLogout}
-                            className="text-zinc-300 hover:text-white hover:bg-zinc-700 gap-2"
-                        >
-                            <LogOut size={16} />
-                            Logout
-                        </Button>
+                        <Link href="/listings">
+                            <Button size="sm" variant="outline" className="border-primary/20 hover:border-primary text-slate-700 dark:text-slate-200 hover:bg-primary/20 transition-all font-bold gap-2">
+                                <ShoppingBag size={16} /> Browse Marketplace
+                            </Button>
+                        </Link>
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="container mx-auto px-6 py-8 relative z-10">
-
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                    <TabsList className="bg-zinc-800 border border-zinc-700 p-1 rounded-xl">
+            <main className="container mx-auto px-6 py-8 relative z-10 flex-1">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 animate-fade-in-up stagger-2">
+                    <TabsList className="bg-slate-200 dark:bg-[#252a1a] border border-primary/10 p-1 rounded-xl inline-flex mb-4">
                         <TabsTrigger
                             value="overview"
-                            className="text-zinc-400 data-[state=active]:bg-indigo-600 data-[state=active]:text-white hover:text-zinc-200 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                            className="text-slate-600 dark:text-slate-400 data-[state=active]:bg-primary data-[state=active]:text-background-dark hover:text-slate-900 dark:hover:text-slate-200 rounded-lg px-6 py-2.5 text-sm font-bold transition-all"
                         >
                             Overview
                         </TabsTrigger>
                         <TabsTrigger
                             value="listings"
-                            className="text-zinc-400 data-[state=active]:bg-indigo-600 data-[state=active]:text-white hover:text-zinc-200 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                            className="text-slate-600 dark:text-slate-400 data-[state=active]:bg-primary data-[state=active]:text-background-dark hover:text-slate-900 dark:hover:text-slate-200 rounded-lg px-6 py-2.5 text-sm font-bold transition-all"
                         >
-                            My Listings
+                            My Listings ({listings.length})
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="overview" className="space-y-8 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
-                        <div className="mb-8">
-                            <h2 className="text-3xl font-bold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400">Dashboard Overview</h2>
-                            <p className="text-zinc-400">Welcome back. Here's what's happening with your business.</p>
-                        </div>
-
-                        {/* Hero Actions Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Seller Action Card */}
-                            {user?.role !== 'ADMIN' && (
-                                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-zinc-900 border border-indigo-500/20 p-8 group transition-all hover:border-indigo-500/40">
-                                    <div className="absolute top-0 right-0 p-32 bg-indigo-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-500" />
-
-                                    <div className="relative z-10">
+                    <TabsContent value="overview" className="animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                        {/* 3-Column Layout on Desktop */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            
+                            {/* Left/Middle Columns: Business Stats & Action Items */}
+                            <div className="lg:col-span-2 space-y-8">
+                                
+                                {/* Seller Business Area */}
+                                {user?.role !== 'ADMIN' && (
+                                    <section>
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-300">
-                                                <Package size={24} />
+                                            <Package className="text-primary" size={24} />
+                                            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style">My Selling Business</h3>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                                            <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center abstract-bg relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1 relative z-10">Active Listings</span>
+                                                <span className="text-3xl font-black text-slate-900 dark:text-slate-100 font-nexa-style relative z-10">{activeListingsCount}</span>
                                             </div>
-                                            <h3 className="text-2xl font-bold text-white">Seller Hub</h3>
+                                            <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center abstract-bg relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1 relative z-10">Sales Completed</span>
+                                                <span className="text-3xl font-black text-slate-900 dark:text-slate-100 font-nexa-style relative z-10">{sellerCompleted}</span>
+                                            </div>
+                                            <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center sm:col-span-2 abstract-bg relative overflow-hidden group border-l-4 border-l-primary">
+                                                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1 relative z-10">Total Revenue Evaluated</span>
+                                                <span className="text-3xl font-black text-primary font-nexa-style relative z-10">${sellerRevenue.toLocaleString()}</span>
+                                            </div>
                                         </div>
-                                        <p className="text-zinc-400 mb-8 max-w-sm">Manage your inventory and start selling today.</p>
 
-                                        <div className="grid gap-3">
-                                            <Link href="/listings/create" className="w-full">
-                                                <Button className="w-full bg-indigo-500/80 hover:bg-indigo-500 text-white h-12 text-base shadow-md shadow-indigo-500/10 justify-between px-6 border-0">
-                                                    <span className="flex items-center gap-2 font-medium">Create New Listing</span>
-                                                    <PlusCircle size={18} />
-                                                </Button>
-                                            </Link>
-                                            <Link href="/dashboard/orders" className="w-full">
-                                                <Button variant="outline" className="w-full bg-zinc-900/50 border-zinc-700 hover:border-indigo-500/50 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 h-12 justify-between px-6 backdrop-blur-sm">
-                                                    View Received Orders
-                                                    <span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-1 rounded-full">{pendingOrders.length} New</span>
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Buyer Action Card */}
-                            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-zinc-900 border border-emerald-500/20 p-8 group transition-all hover:border-emerald-500/40">
-                                <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-500" />
-
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-300">
-                                            <ShoppingBag size={24} />
-                                        </div>
-                                        <h3 className="text-2xl font-bold text-white">Buyer Hub</h3>
-                                    </div>
-                                    <p className="text-zinc-400 mb-8 max-w-sm">Explore specific services and track your orders.</p>
-
-                                    <div className="grid gap-3">
-                                        <Link href="/listings" className="w-full">
-                                            <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-12 text-base shadow-lg shadow-emerald-600/20 justify-between px-6 border-0">
-                                                <span className="flex items-center gap-2 font-medium">Browse Marketplace</span>
-                                                <ArrowRight size={18} />
-                                            </Button>
-                                        </Link>
-                                        <Link href="/dashboard/my-orders" className="w-full">
-                                            <Button variant="outline" className="w-full bg-zinc-900/50 border-zinc-700 hover:border-emerald-500/50 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 h-12 justify-between px-6 backdrop-blur-sm">
-                                                My Purchase Requests
-                                                <ArrowRight size={16} className="opacity-50" />
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Stats Row */}
-                        {ordersLoading ? (
-                            <StatsSkeleton />
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Listings</span>
-                                    <span className="text-3xl font-bold text-white">{listings.length}</span>
-                                </div>
-                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Pending Orders</span>
-                                    <span className="text-3xl font-bold text-amber-500">{pendingOrders.length}</span>
-                                </div>
-                                <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-2xl flex flex-col justify-center items-center text-center">
-                                    <span className="text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-1">Total Orders</span>
-                                    <span className="text-3xl font-bold text-emerald-500">{orders.length}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Recent Listings Preview */}
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-white">Recent Listings</h3>
-                                <Button
-                                    variant="link"
-                                    className="text-indigo-400 hover:text-indigo-300 p-0"
-                                    onClick={() => setActiveTab('listings')}
-                                >
-                                    View All
-                                </Button>
-                            </div>
-                            {listingsLoading ? (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <ListingSkeleton />
-                                </div>
-                            ) : listings.length === 0 ? (
-                                <div className="text-center py-8 bg-zinc-900/30 rounded-2xl border border-zinc-800 border-dashed">
-                                    <p className="text-zinc-500 text-sm">No listings yet</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {listings.slice(0, 3).map((listing) => (
-                                        <Link key={listing.id} href={`/listings/${listing.id}`} className="block group">
-                                            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-all hover:bg-zinc-800/50">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${listing.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-700 text-zinc-400'}`}>
-                                                        {listing.status}
-                                                    </span>
-                                                    <span className="text-zinc-500 text-xs">{new Date(listing.createdAt).toLocaleDateString()}</span>
+                                        {/* Seller Action Required */}
+                                        {sellerPendingAction.length > 0 && (
+                                            <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 mb-6">
+                                                <div className="flex items-start justify-between">
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-primary flex items-center gap-2 mb-1">
+                                                            <AlertCircle size={16} /> Action Required: {sellerPendingAction.length} Pending Order{sellerPendingAction.length > 1 ? 's' : ''}
+                                                        </h4>
+                                                        <p className="text-xs text-slate-400">You have purchase requests waiting for your response or a quote.</p>
+                                                    </div>
+                                                    <Link href="/dashboard/orders">
+                                                        <Button size="sm" className="bg-primary/20 text-primary hover:bg-primary hover:text-background-dark font-bold text-xs h-8">
+                                                            View Orders
+                                                        </Button>
+                                                    </Link>
                                                 </div>
-                                                <h4 className="font-semibold text-white group-hover:text-indigo-300 transition-colors line-clamp-1 mb-1">{listing.title}</h4>
-                                                <p className="text-zinc-400 text-sm font-medium">
-                                                    {listing.price ? `$${listing.price.toLocaleString()}` : <span className="text-indigo-400">Quote</span>}
-                                                </p>
                                             </div>
+                                        )}
+                                        <hr className="border-primary/10" />
+                                    </section>
+                                )}
+
+                                {/* Buyer Purchases Area */}
+                                <section>
+                                    <div className="flex items-center gap-3 mb-4 mt-6">
+                                        <ShoppingBag className="text-slate-500" size={24} />
+                                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style">My Purchases</h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                                        <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center abstract-bg">
+                                            <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1">Active Requests</span>
+                                            <span className="text-3xl font-black text-slate-900 dark:text-slate-100 font-nexa-style">{buyerPendingAction.length}</span>
+                                        </div>
+                                        <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center abstract-bg">
+                                            <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1">Items Bought</span>
+                                            <span className="text-3xl font-black text-slate-900 dark:text-slate-100 font-nexa-style">{buyerCompleted}</span>
+                                        </div>
+                                        <div className="bg-slate-100 dark:bg-[#252a1a] border border-primary/10 p-4 rounded-xl flex flex-col justify-center sm:col-span-2 abstract-bg">
+                                            <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-1">Total Spent Evaluated</span>
+                                            <span className="text-3xl font-black text-slate-500 font-nexa-style">${buyerSpent.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex justify-end">
+                                        <Link href="/dashboard/my-orders">
+                                            <Button variant="link" className="text-primary hover:text-primary/80 font-bold p-0 text-sm">
+                                                View Purchase History <ArrowRight size={14} className="ml-1" />
+                                            </Button>
                                         </Link>
-                                    ))}
+                                    </div>
+                                </section>
+                                
+                            </div>
+
+                            {/* Right Column: Activity Feed */}
+                            <div className="lg:col-span-1 border-l-0 lg:border-l border-primary/10 lg:pl-8 pt-8 lg:pt-0">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <Activity className="text-primary" size={20} />
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-nexa-style">Recent Activity</h3>
                                 </div>
-                            )}
+
+                                {activityLoading ? (
+                                    <div className="space-y-4">
+                                        {[1,2,3,4].map(i => (
+                                            <div key={i} className="flex gap-4">
+                                                <div className="w-2 h-2 mt-2 rounded-full bg-slate-800 animate-pulse" />
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-4 bg-slate-800 rounded w-3/4 animate-pulse" />
+                                                    <div className="h-3 bg-slate-800 rounded w-1/4 animate-pulse" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : activities.length === 0 ? (
+                                    <div className="text-center py-12 bg-slate-200/20 dark:bg-[#252a1a]/40 rounded-xl border border-primary/5">
+                                        <p className="text-slate-500 font-medium text-sm">No recent activity.</p>
+                                    </div>
+                                ) : (
+                                    <div className="relative border-l border-primary/20 ml-2 space-y-6">
+                                        {activities.map((activity, idx) => (
+                                            <div key={activity.id} className="relative pl-6">
+                                                {/* Timeline Dot */}
+                                                <div className="absolute w-3 h-3 bg-background-dark border-2 border-primary rounded-full -left-[6.5px] top-1.5 shadow-[0_0_8px_rgba(211,235,148,0.5)]" />
+                                                
+                                                <div className="flex flex-col">
+                                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{activity.message}</p>
+                                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1.5 flex items-center gap-1">
+                                                        <Clock size={10} /> {formatTimeAgo(activity.createdAt)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="listings" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
-                        <div className="flex justify-between items-center">
+                    <TabsContent value="listings" className="animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                        {/* Same Listings view as before but integrated cleanly */}
+                        <div className="flex justify-between items-center mb-8 border-b border-primary/10 pb-6">
                             <div>
-                                <h2 className="text-2xl font-bold tracking-tight mb-1">My Listings</h2>
-                                <p className="text-zinc-400 text-sm">Manage all your active and draft listings</p>
+                                <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 text-slate-900 dark:text-white font-nexa-style">My Listings</h2>
+                                <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">Manage all your active and draft listings</p>
                             </div>
                             {user?.role !== 'ADMIN' && (
                                 <Link href="/listings/create">
-                                    <Button className="bg-indigo-500/80 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/10 border-0 gap-2">
-                                        <span className="flex items-center gap-2"><PlusCircle size={18} /> Create New Listing</span>
+                                    <Button className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold gap-2 rounded-lg px-6 h-10">
+                                        <PlusCircle size={18} /> Create New Listing
                                     </Button>
                                 </Link>
                             )}
                         </div>
 
                         {listingsLoading ? (
-                            <ListingSkeleton />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <ListingSkeleton />
+                            </div>
                         ) : listings.length === 0 ? (
-                            <div className="min-h-[300px] flex flex-col items-center justify-center p-8 bg-zinc-800/20 border border-zinc-700/50 rounded-2xl">
-                                <div className="p-4 bg-zinc-800 rounded-full mb-4">
-                                    <LayoutDashboard size={32} className="text-zinc-500" />
+                            <div className="min-h-[300px] flex flex-col items-center justify-center p-12 bg-slate-200/20 dark:bg-[#252a1a]/40 border border-primary/5 border-dashed rounded-2xl text-center">
+                                <div className="p-4 bg-slate-200 dark:bg-background-dark rounded-full mb-6">
+                                    <LayoutDashboard size={40} className="text-slate-500" />
                                 </div>
-                                <h3 className="text-lg font-medium text-white">No listings found</h3>
-                                <p className="text-zinc-400 mt-1 mb-6">Create your first listing to start selling.</p>
+                                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style mb-2">No listings found</h3>
+                                <p className="text-slate-500 mt-1 mb-8 max-w-sm">Create your first marketplace listing to start offering services to your clients.</p>
                                 <Link href="/listings/create">
-                                    <Button variant="outline" className="border-zinc-600 text-zinc-300">Create Listing</Button>
+                                    <Button variant="outline" className="border-primary/20 hover:border-primary text-slate-700 dark:text-slate-200 hover:bg-primary/20 transition-all font-bold h-12 px-8">Create Listing</Button>
                                 </Link>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {listings.map((listing) => (
-                                    <Card
-                                        key={listing.id}
-                                        className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm hover:border-indigo-500/30 transition-all duration-300 h-full flex flex-col group"
-                                    >
-                                        <CardHeader className="pb-3 flex-1">
-                                            <div className="flex justify-between items-start gap-2 mb-2">
+                                    <div key={listing.id} className="group flex flex-col bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 hover:border-primary/40 transition-all duration-300 abstract-bg">
+                                        <div className="p-6 flex-1 flex flex-col">
+                                            <div className="flex justify-between items-start gap-2 mb-4">
                                                 <div className="flex-1">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium mb-2 ${listing.isBlocked
-                                                        ? 'bg-red-500/10 text-red-400'
+                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-widest mb-2 ${listing.isBlocked
+                                                        ? 'bg-red-500/20 text-red-500'
                                                         : listing.status === 'ACTIVE'
-                                                            ? 'bg-emerald-500/10 text-emerald-400'
-                                                            : 'bg-zinc-600/50 text-zinc-300'
+                                                            ? 'bg-primary/20 text-primary'
+                                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
                                                         }`}>
                                                         {listing.isBlocked ? 'BLOCKED BY ADMIN' : listing.status}
                                                     </span>
                                                 </div>
-                                                <div className="flex gap-1">
-                                                    {/* Menu removed as per request */}
-                                                </div>
                                             </div>
-                                            <CardTitle className="text-lg font-medium text-zinc-50 group-hover:text-indigo-300 transition-colors line-clamp-1 mb-1">
-                                                <Link href={`/listings/${listing.id}`} className="hover:underline">
+                                            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-nexa-style group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                                                <Link href={`/listings/${listing.id}`}>
                                                     {listing.title}
                                                 </Link>
-                                            </CardTitle>
-                                            <CardDescription className="text-zinc-400 text-sm line-clamp-2 min-h-[40px]">
+                                            </h3>
+                                            <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3 min-h-[60px] mt-auto font-medium">
                                                 {listing.description}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="pt-0 border-t border-zinc-700/50 p-4 bg-zinc-800/20">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-lg font-bold text-white">
-                                                    {listing.price
-                                                        ? `$${listing.price.toLocaleString()}`
-                                                        : <span className="text-indigo-400 text-sm font-medium">Contact for Quote</span>
-                                                    }
-                                                </span>
-                                                <div className="flex gap-2">
-                                                    <Link href={`/listings/${listing.id}/edit`}>
+                                            </p>
+                                        </div>
+                                        
+                                        <div className="border-t border-primary/5 p-6 flex justify-between items-center">
+                                            <div className="flex flex-col">
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Pricing</p>
+                                                <p className="text-2xl font-black text-slate-900 dark:text-white font-nexa-style">
+                                                    {listing.price ? `$${listing.price.toLocaleString()}` : <span className="text-primary text-lg">Quote</span>}
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Link href={`/listings/${listing.id}/edit`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-10 w-10 p-0 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </Button>
+                                                </Link>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-8 text-zinc-400 hover:text-white hover:bg-zinc-700 px-2"
+                                                            className="h-10 w-10 p-0 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setListingToDelete(listing.id);
+                                                            }}
                                                         >
-                                                            <Pencil size={16} />
+                                                            <Trash2 size={16} />
                                                         </Button>
-                                                    </Link>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-8 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 px-2"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation(); // prevent card click
-                                                                    setListingToDelete(listing.id);
-                                                                }}
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className="bg-background-light dark:bg-background-dark border-primary/10">
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle className="text-slate-900 dark:text-white font-nexa-style text-xl">Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
+                                                                This action cannot be undone. This will permanently remove the listing "{listing.title}" from the marketplace.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel className="bg-slate-200 dark:bg-[#252a1a] text-slate-900 dark:text-white border-primary/10 hover:bg-slate-300 dark:hover:bg-primary/10 font-bold">Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={confirmDelete}
+                                                                className="bg-red-500 text-white hover:bg-red-600 border-0 font-bold"
                                                             >
-                                                                <Trash2 size={16} />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-zinc-400">
-                                                                    This action cannot be undone. This will permanently remove the listing "{listing.title}" from the marketplace.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel className="bg-zinc-800 text-white border-zinc-700 hover:bg-zinc-700">Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction
-                                                                    onClick={confirmDelete}
-                                                                    className="bg-red-600 text-white hover:bg-red-700 border-0"
-                                                                >
-                                                                    Delete Listing
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -397,5 +435,3 @@ export default function DashboardPage() {
         </ProtectedRoute>
     );
 }
-
-

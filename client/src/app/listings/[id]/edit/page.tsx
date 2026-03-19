@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { toast } from 'sonner';
 import { ArrowLeft, Package, ChevronDown, FileText, Sparkles, DollarSign, Lock } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
 
 // ==========================================
 // TYPES
@@ -171,18 +172,18 @@ function EditListingContent() {
     // ==========================================
     if (isLoadingListing) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
         );
     }
 
     if (!listing) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
-                <h2 className="text-xl font-bold mb-2">Listing Not Found</h2>
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col items-center justify-center text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-extrabold font-nexa-style mb-4">Listing Not Found</h2>
                 <Link href="/dashboard">
-                    <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent">
+                    <Button className="bg-primary/20 text-primary hover:bg-primary hover:text-background-dark font-bold px-8 h-12">
                         Back to Dashboard
                     </Button>
                 </Link>
@@ -192,11 +193,11 @@ function EditListingContent() {
 
     if (!isOwner) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
-                <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-                <p className="text-zinc-300 mb-4">You can only edit your own listings.</p>
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col items-center justify-center text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-extrabold font-nexa-style mb-2">Access Denied</h2>
+                <p className="text-slate-500 font-medium mb-6">You can only edit your own listings.</p>
                 <Link href={`/listings/${id}`}>
-                    <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent">
+                    <Button className="bg-primary/20 text-primary hover:bg-primary hover:text-background-dark font-bold px-8 h-12">
                         View Listing
                     </Button>
                 </Link>
@@ -206,17 +207,17 @@ function EditListingContent() {
 
     if (listing.isBlocked) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
-                <div className="bg-red-500/10 p-4 rounded-full mb-4">
-                    <Lock size={32} className="text-red-500" />
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col items-center justify-center text-slate-900 dark:text-white">
+                <div className="bg-red-500/10 p-5 rounded-full mb-6 border border-red-500/20">
+                    <Lock size={40} className="text-red-500" />
                 </div>
-                <h2 className="text-xl font-bold mb-2">Listing Blocked</h2>
-                <p className="text-zinc-300 mb-6 text-center max-w-md">
+                <h2 className="text-2xl font-extrabold font-nexa-style mb-3">Listing Blocked</h2>
+                <p className="text-slate-500 font-medium mb-8 text-center max-w-md">
                     This listing has been blocked by an admin and cannot be edited.
                     Please contact support for more information.
                 </p>
                 <Link href="/dashboard">
-                    <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent">
+                    <Button className="bg-slate-200 dark:bg-[#252a1a] text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-primary/10 font-bold px-8 h-12">
                         Return to Dashboard
                     </Button>
                 </Link>
@@ -228,72 +229,69 @@ function EditListingContent() {
     // RENDER
     // ==========================================
     return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 relative z-10 layout-container flex grow flex-col">
+            <Navbar />
 
             {/* Header */}
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href={`/listings/${id}`} className="text-zinc-300 hover:text-white transition-colors">
-                            <ArrowLeft size={20} />
-                        </Link>
-                        <h1 className="text-xl font-bold tracking-tight">Edit Listing</h1>
-                    </div>
+            <div className="border-b border-primary/5 bg-background-light/40 dark:bg-[#1c2012]/40 animate-fade-in-up stagger-1">
+                <div className="container mx-auto px-6 py-6 flex flex-col gap-2">
+                    <Link href={`/listings/${id}`} className="text-slate-500 hover:text-primary transition-colors inline-flex items-center gap-2 text-sm font-bold w-fit uppercase tracking-widest">
+                        <ArrowLeft size={16} /> Back to Listing
+                    </Link>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style">Edit Listing</h1>
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="container mx-auto px-6 py-10 relative z-10 max-w-2xl">
-                <Card className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm overflow-hidden">
-                    <CardHeader className="border-b border-zinc-700/50 bg-zinc-800/20">
-                        <div className="flex items-center gap-3 mb-1">
-                            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-                                <Package size={20} />
+            <main className="container mx-auto px-6 py-10 relative z-10 max-w-3xl flex-1 animate-fade-in-up stagger-2">
+                <Card className="bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 abstract-bg shadow-sm">
+                    <CardHeader className="border-b border-primary/5 p-8 pb-6">
+                        <div className="flex items-center gap-4 mb-2">
+                            <div className="p-3 bg-primary/20 rounded-xl text-primary">
+                                <Package size={24} />
                             </div>
-                            <CardTitle className="text-xl text-white">Update Listing</CardTitle>
+                            <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style">Update Listing</CardTitle>
                         </div>
-                        <CardDescription className="text-zinc-300">
+                        <CardDescription className="text-slate-500 font-medium ml-16">
                             Modify the details below to update your listing.
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="pt-6">
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <CardContent className="p-8">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                             {/* Title */}
-                            <div className="space-y-2">
-                                <Label htmlFor="title" className="text-zinc-200">Title</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="title" className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Title</Label>
                                 <Input
                                     id="title"
                                     placeholder="e.g., Premium Web Development Service"
                                     {...register('title', { required: 'Title is required' })}
-                                    className="bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 rounded-xl h-11 transition-all"
+                                    className="bg-slate-200/50 dark:bg-black/20 border-primary/10 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-primary rounded-xl h-14 px-5 font-bold text-lg"
                                 />
                                 {errors.title && (
-                                    <p className="text-sm text-red-400">{errors.title.message}</p>
+                                    <p className="text-sm text-red-500 font-bold">{errors.title.message}</p>
                                 )}
                             </div>
 
                             {/* Description */}
-                            <div className="space-y-2">
-                                <Label htmlFor="description" className="text-zinc-200">Description</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="description" className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Description</Label>
                                 <textarea
                                     id="description"
                                     placeholder="Describe your product or service in detail..."
-                                    rows={4}
+                                    rows={5}
                                     {...register('description', { required: 'Description is required' })}
-                                    className="w-full bg-zinc-900/50 border border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 rounded-xl p-3 transition-all resize-none"
+                                    className="w-full bg-slate-200/50 dark:bg-black/20 border border-primary/10 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent rounded-xl p-5 resize-none font-medium leading-relaxed"
                                 />
                                 {errors.description && (
-                                    <p className="text-sm text-red-400">{errors.description.message}</p>
+                                    <p className="text-sm text-red-500 font-bold">{errors.description.message}</p>
                                 )}
                             </div>
 
                             {/* Category - Searchable Input with Dropdown */}
-                            <div className="space-y-2">
-                                <Label className="text-zinc-200">Category</Label>
-                                <p className="text-xs text-zinc-400">Select existing or type a new category name</p>
+                            <div className="space-y-3">
+                                <Label className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Category</Label>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Select existing or type a new category name</p>
 
                                 <div className="relative">
                                     <Input
@@ -307,20 +305,20 @@ function EditListingContent() {
                                         }}
                                         onFocus={() => setIsDropdownOpen(true)}
                                         placeholder="e.g., Web Development, Design, Marketing"
-                                        className="bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 rounded-xl h-11 transition-all pr-10"
+                                        className="bg-slate-200/50 dark:bg-black/20 border-primary/10 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-primary rounded-xl h-14 px-5 pr-12 font-bold"
                                     />
                                     <ChevronDown
-                                        size={18}
-                                        className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition-transform cursor-pointer ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                        size={20}
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform cursor-pointer hover:text-primary ${isDropdownOpen ? 'rotate-180 text-primary' : ''}`}
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     />
 
                                     {/* Dropdown Options */}
                                     {isDropdownOpen && (
-                                        <div className="absolute z-20 w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl overflow-hidden">
-                                            <div className="max-h-48 overflow-y-auto">
+                                        <div className="absolute z-20 w-full mt-2 bg-slate-100 dark:bg-[#1c2012] border border-primary/20 rounded-xl shadow-xl overflow-hidden">
+                                            <div className="max-h-56 overflow-y-auto">
                                                 {filteredCategories.length === 0 ? (
-                                                    <div className="py-3 px-4 text-zinc-400 text-sm">
+                                                    <div className="py-4 px-5 text-slate-500 text-sm font-medium">
                                                         {categorySearch.trim()
                                                             ? `"${categorySearch.trim()}" will be created as a new category`
                                                             : 'No categories yet. Type to create one.'
@@ -332,9 +330,9 @@ function EditListingContent() {
                                                             key={category.id}
                                                             type="button"
                                                             onClick={() => handleCategorySelect(category.id, category.name)}
-                                                            className={`w-full text-left py-3 px-4 hover:bg-zinc-700 transition-colors ${existingCategory?.id === category.id
-                                                                ? 'bg-indigo-500/10 text-indigo-300'
-                                                                : 'text-zinc-200'
+                                                            className={`w-full text-left py-4 px-5 transition-colors font-bold ${existingCategory?.id === category.id
+                                                                ? 'bg-primary/20 text-primary'
+                                                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-primary/10 hover:text-primary'
                                                                 }`}
                                                         >
                                                             {category.name}
@@ -345,7 +343,7 @@ function EditListingContent() {
 
                                             {/* Show "will create" hint if typing new name */}
                                             {categorySearch.trim() && !existingCategory && filteredCategories.length > 0 && (
-                                                <div className="py-2 px-4 text-xs text-indigo-400 border-t border-zinc-700 bg-indigo-500/5">
+                                                <div className="py-3 px-5 text-xs text-primary font-bold uppercase tracking-widest bg-primary/10">
                                                     Press "Save Changes" to add "{categorySearch.trim()}" as a new category
                                                 </div>
                                             )}
@@ -354,38 +352,38 @@ function EditListingContent() {
                                 </div>
 
                                 {!categorySearch.trim() && errors.categoryId && (
-                                    <p className="text-sm text-red-400">Category is required</p>
+                                    <p className="text-sm text-red-500 font-bold">Category is required</p>
                                 )}
                             </div>
 
                             {/* Pricing Mode Toggle */}
-                            <div className="space-y-2">
-                                <Label className="text-zinc-200">Pricing Mode</Label>
-                                <div className="flex gap-3">
+                            <div className="space-y-3 pt-4 border-t border-primary/5">
+                                <Label className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Pricing Mode</Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <button
                                         type="button"
                                         onClick={() => setValue('listingType', 'FIXED')}
-                                        className={`flex-1 py-3 px-4 rounded-xl border transition-all ${selectedListingType === 'FIXED'
-                                            ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                                            : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                                        className={`p-5 rounded-xl border-2 text-left transition-all ${selectedListingType === 'FIXED'
+                                            ? 'bg-primary/10 border-primary text-slate-900 dark:text-white'
+                                            : 'bg-slate-200/50 dark:bg-black/20 border-transparent text-slate-500 hover:border-primary/30 hover:text-slate-700 dark:hover:text-slate-300'
                                             }`}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <DollarSign size={18} />
-                                            <span className="font-medium">Fixed Price</span>
+                                        <div className="font-extrabold font-nexa-style text-lg flex items-center gap-2">
+                                            <DollarSign size={20} className={selectedListingType === 'FIXED' ? 'text-primary' : ''} />
+                                            Fixed Price
                                         </div>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setValue('listingType', 'QUOTE')}
-                                        className={`flex-1 py-3 px-4 rounded-xl border transition-all ${selectedListingType === 'QUOTE'
-                                            ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                                            : 'bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                                        className={`p-5 rounded-xl border-2 text-left transition-all ${selectedListingType === 'QUOTE'
+                                            ? 'bg-primary/10 border-primary text-slate-900 dark:text-white'
+                                            : 'bg-slate-200/50 dark:bg-black/20 border-transparent text-slate-500 hover:border-primary/30 hover:text-slate-700 dark:hover:text-slate-300'
                                             }`}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <FileText size={18} />
-                                            <span className="font-medium">Request Quote</span>
+                                        <div className="font-extrabold font-nexa-style text-lg flex items-center gap-2">
+                                            <FileText size={20} className={selectedListingType === 'QUOTE' ? 'text-primary' : ''} />
+                                            Request Quote
                                         </div>
                                     </button>
                                 </div>
@@ -393,69 +391,68 @@ function EditListingContent() {
 
                             {/* Price - Only show for Fixed pricing */}
                             {selectedListingType === 'FIXED' && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="price" className="text-zinc-200">Price (USD)</Label>
+                                <div className="space-y-3 animate-fade-in-up">
+                                    <Label htmlFor="price" className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Price (USD)</Label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
+                                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-primary font-bold text-lg">$</span>
                                         <Input
                                             id="price"
                                             type="number"
                                             step="0.01"
                                             placeholder="0.00"
                                             {...register('price', { valueAsNumber: true })}
-                                            className="pl-8 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 rounded-xl h-11 transition-all"
+                                            className="pl-10 bg-slate-200/50 dark:bg-black/20 border-primary/10 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-primary rounded-xl h-14 font-black font-nexa-style text-xl"
                                         />
                                     </div>
                                     {errors.price && (
-                                        <p className="text-sm text-red-400">{errors.price.message}</p>
+                                        <p className="text-sm text-red-500 font-bold">{errors.price.message}</p>
                                     )}
                                 </div>
                             )}
 
                             {/* Status Toggle - Only show for DRAFT listings */}
                             {listing.status === 'DRAFT' && (
-                                <div className="space-y-3">
-                                    <Label className="text-zinc-200">Listing Status</Label>
-                                    <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-3 pt-4 border-t border-primary/5">
+                                    <Label className="text-slate-900 dark:text-white font-extrabold font-nexa-style tracking-wider text-sm">Listing Status</Label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <button
                                             type="button"
                                             onClick={() => setValue('status', 'DRAFT')}
-                                            className={`p-4 rounded-xl border text-left transition-all ${selectedStatus === 'DRAFT'
-                                                ? 'bg-zinc-700/80 border-zinc-500 text-white'
-                                                : 'bg-zinc-900/50 border-zinc-700 text-zinc-300 hover:border-zinc-600'
+                                            className={`p-5 rounded-xl border-2 text-left transition-all ${selectedStatus === 'DRAFT'
+                                                ? 'bg-slate-300 dark:bg-slate-700/80 border-slate-400 text-slate-900 dark:text-white'
+                                                : 'bg-slate-200/50 dark:bg-black/20 border-transparent text-slate-500 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'
                                                 }`}
                                         >
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <FileText size={16} />
-                                                <span className="font-medium">Draft</span>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <FileText size={20} className={selectedStatus === 'DRAFT' ? 'text-slate-500 dark:text-slate-300' : ''} />
+                                                <span className="font-extrabold font-nexa-style text-lg">Draft</span>
                                             </div>
-                                            <p className="text-xs text-zinc-400">Not visible to buyers</p>
+                                            <p className="text-xs font-medium opacity-80 uppercase tracking-widest">Not visible to buyers</p>
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setValue('status', 'ACTIVE')}
-                                            className={`p-4 rounded-xl border text-left transition-all ${selectedStatus === 'ACTIVE'
-                                                ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                                                : 'bg-zinc-900/50 border-zinc-700 text-zinc-300 hover:border-zinc-600'
+                                            className={`p-5 rounded-xl border-2 text-left transition-all ${selectedStatus === 'ACTIVE'
+                                                ? 'bg-primary/20 border-primary text-primary'
+                                                : 'bg-slate-200/50 dark:bg-black/20 border-transparent text-slate-500 hover:border-primary/30 hover:text-slate-700 dark:hover:text-slate-300'
                                                 }`}
                                         >
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Sparkles size={16} />
-                                                <span className="font-medium">Active</span>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <Sparkles size={20} className={selectedStatus === 'ACTIVE' ? 'text-primary' : ''} />
+                                                <span className="font-extrabold font-nexa-style text-lg">Active</span>
                                             </div>
-                                            <p className="text-xs text-zinc-400">Visible to all buyers</p>
+                                            <p className="text-xs font-medium opacity-80 uppercase tracking-widest">Visible to all buyers</p>
                                         </button>
                                     </div>
                                 </div>
                             )}
 
                             {/* Submit Buttons */}
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex gap-4 pt-8 border-t border-primary/10">
                                 <Link href={`/listings/${id}`} className="flex-1">
                                     <Button
                                         type="button"
-                                        variant="outline"
-                                        className="w-full border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 h-12 bg-transparent"
+                                        className="w-full h-14 text-lg font-bold bg-slate-200 dark:bg-black/20 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-primary/10 hover:text-primary transition-colors border border-primary/10 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
@@ -463,7 +460,7 @@ function EditListingContent() {
                                 <Button
                                     type="submit"
                                     disabled={isUpdating || isSubmitting}
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white h-12 shadow-lg shadow-indigo-600/20 border-0"
+                                    className="flex-1 h-14 text-lg font-bold bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all rounded-xl"
                                 >
                                     {isUpdating || isSubmitting ? 'Saving...' : 'Save Changes'}
                                 </Button>
