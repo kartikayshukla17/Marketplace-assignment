@@ -55,8 +55,8 @@ export default function Home() {
         </div>
 
         {/* Dynamic Category Filters Strip */}
-        <div className="flex flex-col gap-6 mb-10 animate-fade-in-up stagger-3">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="mb-10 animate-fade-in-up stagger-3">
+          <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth">
             <button 
               onClick={() => setSelectedCategoryId(null)}
               className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-5 font-bold text-sm transition-all focus:outline-none ${!selectedCategoryId ? 'bg-primary text-background-dark' : 'bg-slate-200 dark:bg-primary/10 text-slate-700 dark:text-slate-200 hover:bg-primary/20'}`}
@@ -66,7 +66,7 @@ export default function Home() {
             </button>
             
             {isLoadingCategories ? (
-              <span className="text-slate-500 text-sm animate-pulse px-4">Loading categories...</span>
+              <span className="text-slate-500 text-sm animate-pulse px-4 shrink-0">Loading categories...</span>
             ) : (
               categories.map(cat => (
                 <button 

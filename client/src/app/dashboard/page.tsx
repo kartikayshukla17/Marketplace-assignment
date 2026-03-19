@@ -139,19 +139,19 @@ function DashboardContent() {
 
             {/* Quick Actions Bar */}
             <div className="bg-slate-200/50 dark:bg-[#1c2012] border-b border-primary/10">
-                <div className="container mx-auto px-6 py-4 flex flex-wrap gap-4 items-center justify-between">
-                    <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style hidden sm:block">Command Center</h2>
-                    <div className="flex flex-wrap gap-3">
+                <div className="container mx-auto px-6 py-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style">Command Center</h2>
+                    <div className="flex w-full sm:w-auto gap-3">
                         {user?.role !== 'ADMIN' && (
-                            <Link href="/listings/create">
-                                <Button size="sm" className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold gap-2">
-                                    <PlusCircle size={16} /> Create Listing
+                            <Link href="/listings/create" className="flex-1 sm:flex-none">
+                                <Button size="sm" className="w-full bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold gap-2">
+                                    <PlusCircle size={14} /> <span className="text-xs sm:text-sm">Create</span>
                                 </Button>
                             </Link>
                         )}
-                        <Link href="/listings">
-                            <Button size="sm" variant="outline" className="border-primary/20 hover:border-primary text-slate-700 dark:text-slate-200 hover:bg-primary/20 transition-all font-bold gap-2">
-                                <ShoppingBag size={16} /> Browse Marketplace
+                        <Link href="/listings" className="flex-1 sm:flex-none">
+                            <Button size="sm" variant="outline" className="w-full border-primary/20 hover:border-primary text-slate-700 dark:text-slate-200 hover:bg-primary/20 transition-all font-bold gap-2">
+                                <ShoppingBag size={14} /> <span className="text-xs sm:text-sm">Browse</span>
                             </Button>
                         </Link>
                     </div>
