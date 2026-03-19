@@ -2,7 +2,7 @@
 // Business logic for Orders with lifecycle management
 
 import { prisma } from '../lib/prisma.js';
-import { OrderStatus } from '../types/enums.js';
+import { OrderStatus, ActivityType } from '../types/enums.js';
 import { sanitizeText } from '../utils/sanitize.js';
 
 // ==========================================
@@ -125,6 +125,24 @@ export const createOrder = async (data: CreateOrderData) => {
         },
     });
 
+    // Log the activity for both buyer and seller
+    await prisma.activityLog.createMany({
+        data: [
+            {
+                userId: data.buyerId,
+                type: ActivityType.ORDER_CREATED,
+                message: `You sent a purchase request for "${listing.title}".`,
+                orderId: order.id
+            },
+            {
+                userId: listing.sellerId,
+                type: ActivityType.ORDER_CREATED,
+                message: `Received a new purchase request for "${listing.title}".`,
+                orderId: order.id
+            }
+        ]
+    });
+
     return { order };
 };
 
@@ -208,6 +226,44 @@ export const updateOrderStatus = async (
         data: { status: newStatus },
     });
 
+    // Determine activity type and messages based on the new status
+    let activityType: ActivityType | null = null;
+    let buyerMessage = '';
+    let sellerMessage = '';
+
+    if (newStatus === OrderStatus.ACCEPTED) {
+        activityType = ActivityType.ORDER_ACCEPTED;
+        buyerMessage = `Your order request was accepted.`;
+        sellerMessage = `You accepted an order request.`;
+    } else if (newStatus === OrderStatus.REJECTED) {
+        activityType = ActivityType.ORDER_REJECTED;
+        buyerMessage = `Your order request was rejected.`;
+        sellerMessage = `You rejected an order request.`;
+    } else if (newStatus === OrderStatus.COMPLETED) {
+        activityType = ActivityType.ORDER_COMPLETED;
+        buyerMessage = `Your order has been completed by the seller.`;
+        sellerMessage = `You marked an order as completed.`;
+    }
+
+    if (activityType) {
+        await prisma.activityLog.createMany({
+            data: [
+                {
+                    userId: order.buyerId,
+                    type: activityType,
+                    message: buyerMessage,
+                    orderId: order.id
+                },
+                {
+                    userId: order.sellerId,
+                    type: activityType,
+                    message: sellerMessage,
+                    orderId: order.id
+                }
+            ]
+        });
+    }
+
     return { order: updatedOrder };
 };
 
@@ -234,6 +290,24 @@ export const cancelOrder = async (orderId: string, buyerId: string) => {
     const updatedOrder = await prisma.order.update({
         where: { id: orderId },
         data: { status: OrderStatus.CANCELLED },
+    });
+
+    // Log the cancellation activity
+    await prisma.activityLog.createMany({
+        data: [
+            {
+                userId: order.buyerId,
+                type: ActivityType.ORDER_REJECTED,
+                message: `You cancelled your purchase request.`,
+                orderId: order.id
+            },
+            {
+                userId: order.sellerId,
+                type: ActivityType.ORDER_REJECTED,
+                message: `The buyer cancelled their purchase request.`,
+                orderId: order.id
+            }
+        ]
     });
 
     return { order: updatedOrder };
@@ -273,6 +347,24 @@ export const provideQuote = async (orderId: string, sellerId: string, offerPrice
     const updatedOrder = await prisma.order.update({
         where: { id: orderId },
         data: { offerPrice },
+    });
+
+    // Log the quote provided activity
+    await prisma.activityLog.createMany({
+        data: [
+            {
+                userId: order.buyerId,
+                type: ActivityType.QUOTE_PROVIDED,
+                message: `Seller provided a quote of $${offerPrice.toLocaleString()} for "${order.listing.title}".`,
+                orderId: order.id
+            },
+            {
+                userId: order.sellerId,
+                type: ActivityType.QUOTE_PROVIDED,
+                message: `You provided a quote of $${offerPrice.toLocaleString()} for "${order.listing.title}".`,
+                orderId: order.id
+            }
+        ]
     });
 
     return { order: updatedOrder };

@@ -35,6 +35,14 @@ enum ListingType {
   QUOTE
 }
 
+enum ActivityType {
+  ORDER_CREATED
+  ORDER_ACCEPTED
+  ORDER_REJECTED
+  ORDER_COMPLETED
+  QUOTE_PROVIDED
+}
+
 // Models
 
 model User {
@@ -52,6 +60,7 @@ model User {
   listings        Listing[]
   ordersAsBuyer   Order[]   @relation("BuyerOrders")
   ordersAsSeller  Order[]   @relation("SellerOrders")
+  activities      ActivityLog[]
 }
 
 model Category {
@@ -121,4 +130,21 @@ model Order {
   @@index([buyerId])
   @@index([sellerId])
   @@index([status])
+}
+
+model ActivityLog {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  
+  type        ActivityType
+  message     String
+  orderId     String?      @db.ObjectId
+  
+  createdAt   DateTime     @default(now())
+
+  // Relations
+  userId      String       @db.ObjectId
+  user        User         @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
 }

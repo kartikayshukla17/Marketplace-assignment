@@ -18,6 +18,6 @@ const baseQueryWithRetry = retry(baseQueryWithTimeout, {
 export const api = createApi({
     reducerPath: 'api',
     baseQuery: baseQueryWithRetry,
-    tagTypes: ['User', 'Listing', 'Order', 'Category'],
+    tagTypes: ['User', 'Listing', 'Order', 'Category', 'Activity'],
     endpoints: () => ({}),
 });

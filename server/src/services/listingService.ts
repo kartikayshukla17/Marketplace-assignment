@@ -18,12 +18,13 @@ const activeListingFilter = {
 
 interface SearchParams {
     search?: string;
+    categoryId?: string;
     page?: number;
     limit?: number;
 }
 
 export const findActiveListings = async (params: SearchParams) => {
-    const { search, page = 1, limit = 10 } = params;
+    const { search, categoryId, page = 1, limit = 10 } = params;
 
     const where: any = {
         ...activeListingFilter,
@@ -40,6 +41,11 @@ export const findActiveListings = async (params: SearchParams) => {
             contains: search,
             mode: 'insensitive',
         };
+    }
+
+    // Filter by Category
+    if (categoryId) {
+        where.categoryId = categoryId;
     }
 
     const [listings, total] = await Promise.all([
