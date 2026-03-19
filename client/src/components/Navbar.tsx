@@ -40,8 +40,9 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
     ];
 
     return (
-        <header className="border-b border-primary/10 px-6 py-4 lg:px-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md sticky top-0 z-50 animate-fade-in-up stagger-1 w-full">
-            <div className="max-w-screen-2xl mx-auto flex w-full items-center justify-between">
+        <>
+            <header className="border-b border-primary/10 px-6 py-4 lg:px-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md sticky top-0 z-50 animate-fade-in-up stagger-1 w-full">
+                <div className="max-w-screen-2xl mx-auto flex w-full items-center justify-between">
                 
                 <div className="flex items-center gap-10">
                     <Link href="/listings" className="flex items-center gap-3">
@@ -123,74 +124,81 @@ export function Navbar({ searchQuery, setSearchQuery }: NavbarProps) {
                 </div>
             </div>
 
-            {/* Mobile Sidebar Menu (Drawer) - Now visible on lg (up to 1024px) */}
-            {isMenuOpen && (
-                <div className="lg:hidden fixed inset-0 z-[100] animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-background-dark/80 backdrop-blur-md" onClick={() => setIsMenuOpen(false)}></div>
-                    <div className="absolute top-0 right-0 h-full w-[300px] bg-[#1c2012] border-l border-primary/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-right duration-300">
-                        <div className="flex items-center justify-between mb-10">
-                            <Link href="/listings" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
-                                    <span className="font-bold text-lg leading-none">V</span>
-                                </div>
-                                <span className="text-xl font-bold text-white font-nexa-style">Verchool</span>
-                            </Link>
-                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-primary transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
+        </header>
+        
+        {/* Mobile Sidebar Menu (Drawer) - Now visible on lg (up to 1024px) */}
+        {isMenuOpen && (
+            <div className="lg:hidden fixed inset-0 z-[100] animate-in fade-in duration-200">
+                {/* Darker, higher-opacity backdrop */}
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsMenuOpen(false)}></div>
+                
+                {/* Solid, ultra-dark drawer background */}
+                <div className="absolute top-0 right-0 h-full w-[300px] bg-background-dark border-l border-primary/20 shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+                    <div className="p-8 pb-4 flex items-center justify-between border-b border-white/5">
+                        <Link href="/listings" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background-dark">
+                                <span className="font-bold text-lg leading-none">V</span>
+                            </div>
+                            <span className="text-xl font-bold text-white font-nexa-style">Verchool</span>
+                        </Link>
+                        <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-primary transition-colors">
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                        <nav className="flex flex-col gap-4">
+                    <div className="flex-1 overflow-y-auto p-8 py-10">
+                        <nav className="flex flex-col gap-5">
                             {navLinks.map((link) => (
                                 <Link 
                                     key={link.href}
                                     href={link.href} 
                                     onClick={() => setIsMenuOpen(false)}
-                                    className={`flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-base transition-all ${
+                                    className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
                                         pathname === link.href 
-                                            ? 'bg-primary text-background-dark' 
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary'
+                                            ? 'bg-primary text-background-dark shadow-[0_0_20px_rgba(211,235,148,0.3)]' 
+                                            : 'text-slate-400 hover:bg-white/5 hover:text-primary border border-white/5'
                                     }`}
                                 >
                                     {link.name}
                                 </Link>
                             ))}
                         </nav>
-
-                        {user && (
-                            <div className="mt-auto pt-8 border-t border-primary/5">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="bg-primary/20 flex items-center justify-center rounded-full w-12 h-12 border-2 border-primary/20 text-primary font-bold">
-                                        {user.name.substring(0, 2)}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold dark:text-white">{user.name}</p>
-                                        <p className="text-xs text-slate-500 uppercase tracking-widest">{user.role}</p>
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={handleLogout}
-                                    className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500 hover:text-white transition-all"
-                                >
-                                    <LogOut size={18} /> Logout
-                                </button>
-                            </div>
-                        )}
-                        
-                        {!user && (
-                            <div className="mt-auto pt-8 border-t border-primary/5">
-                                <Link 
-                                    href="/login"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="w-full flex items-center justify-center px-4 py-4 rounded-xl bg-primary text-background-dark font-bold hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all"
-                                >
-                                    Sign In to Marketplace
-                                </Link>
-                            </div>
-                        )}
                     </div>
+
+                    {user && (
+                        <div className="p-8 mt-auto border-t border-white/5 bg-black/40">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="bg-primary/20 flex items-center justify-center rounded-2xl w-14 h-14 border-2 border-primary/20 text-primary font-bold text-xl shadow-inner">
+                                    {user.name.substring(0, 2)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-extrabold text-white text-lg truncate">{user.name}</p>
+                                    <p className="text-[10px] text-primary uppercase tracking-[0.2em] font-bold mt-1 opacity-70">{user.role}</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={handleLogout}
+                                className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
+                            >
+                                <LogOut size={20} /> Logout Account
+                            </button>
+                        </div>
+                    )}
+                    
+                    {!user && (
+                        <div className="p-8 mt-auto border-t border-white/5 bg-black/40">
+                            <Link 
+                                href="/login"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="w-full flex items-center justify-center px-6 py-5 rounded-2xl bg-primary text-background-dark font-extrabold hover:shadow-[0_0_20px_rgba(211,235,148,0.4)] transition-all text-center"
+                            >
+                                Sign In to Platform
+                            </Link>
+                        </div>
+                    )}
                 </div>
-            )}
-        </header>
+            </div>
+        )}
+        </>
     );
 }

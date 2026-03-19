@@ -21,9 +21,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${manrope.variable} antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display relative min-h-screen selection:bg-primary selection:text-black`}
+        suppressHydrationWarning
       >
         <div className="fixed inset-0 noise-bg pointer-events-none z-50 mix-blend-overlay opacity-20"></div>
         <Providers>

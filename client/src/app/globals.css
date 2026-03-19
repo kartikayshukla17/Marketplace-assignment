@@ -43,7 +43,7 @@
 @layer base {
   * {
     border-color: var(--border);
-    @apply outline-primary/50;
+    @apply outline-[var(--primary)]/50;
   }
 
   body {
