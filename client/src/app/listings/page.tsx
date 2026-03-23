@@ -1,289 +1,208 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Grid, Activity, Package, Briefcase } from 'lucide-react';
 import { useGetListingsQuery } from '@/store/listingsApi';
-import { useGetCategoriesQuery, type Category } from '@/store/categoriesApi';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, ChevronDown, LayoutGrid, ArrowLeft, X, ShoppingBag } from 'lucide-react';
-import { ListingSkeleton } from '@/components/ui/skeleton';
+import { useGetCategoriesQuery } from '@/store/categoriesApi';
+import { Navbar } from '@/components/Navbar';
 
-// ==========================================
-// CONSTANTS
-// ==========================================
-const ITEMS_PER_PAGE = 12;
+// Fallback minimal icon mapping for categories
+const getCategoryIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('dev') || n.includes('tech')) return <Activity className="w-5 h-5" />;
+  if (n.includes('design') || n.includes('art')) return <Activity className="w-5 h-5" />;
+  return <Briefcase className="w-5 h-5" />;
+};
 
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
-export default function ListingsPage() {
-    // State
-    const [search, setSearch] = useState('');
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-    const [categorySearch, setCategorySearch] = useState('');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [page, setPage] = useState(1);
+export default function Home() {
+  const router = useRouter();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-    // Data fetching
-    const { data, isLoading, error } = useGetListingsQuery({ search: search || undefined, page, limit: ITEMS_PER_PAGE });
-    const { data: categoriesData } = useGetCategoriesQuery();
+  // Reset page to 1 when search or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategoryId]);
 
-    const allListings = data?.data?.listings || [];
-    const pagination = data?.data?.pagination;
-    const categories = categoriesData?.data?.categories || [];
+  const { data: listingsData, isLoading: isLoadingListings, isFetching } = useGetListingsQuery({ 
+    limit: 12, 
+    page: currentPage,
+    search: searchQuery || undefined,
+    categoryId: selectedCategoryId || undefined
+  });
+  const { data: categoriesData, isLoading: isLoadingCategories } = useGetCategoriesQuery();
 
-    // ==========================================
-    // DERIVED STATE (Memoized for performance)
-    // ==========================================
+  const filteredListings = listingsData?.data?.listings || [];
+  const pagination = listingsData?.data?.pagination;
+  const categories = categoriesData?.data?.categories || [];
 
-    // Filter categories based on search
-    const filteredCategories = useMemo(() => {
-        if (!categorySearch.trim()) return categories;
-        return categories.filter((cat) =>
-            cat.name.toLowerCase().includes(categorySearch.toLowerCase())
-        );
-    }, [categories, categorySearch]);
+  return (
+    <div className="layout-container flex h-full grow flex-col">
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-    // Filter listings by selected category (client-side)
-    const filteredListings = useMemo(() => {
-        if (!selectedCategoryId) return allListings;
-        return allListings.filter((listing) => listing.categoryId === selectedCategoryId);
-    }, [allListings, selectedCategoryId]);
+      <main className="px-6 py-8 lg:px-20 max-w-screen-2xl mx-auto w-full flex-1">
+        {/* Hero Section */}
+        <div className="mb-10 animate-fade-in-up stagger-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-2 font-nexa-style">
+            Service Marketplace
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">
+            Discover and procure elite professional services for your business.
+          </p>
+        </div>
 
-    // Get selected category name for display
-    const selectedCategory = useMemo(() => {
-        return categories.find((cat) => cat.id === selectedCategoryId);
-    }, [categories, selectedCategoryId]);
+        {/* Dynamic Category Filters Strip */}
+        <div className="mb-10 animate-fade-in-up stagger-3">
+          <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth">
+            <button 
+              onClick={() => setSelectedCategoryId(null)}
+              className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-5 font-bold text-sm transition-all focus:outline-none ${!selectedCategoryId ? 'bg-primary text-background-dark' : 'bg-slate-200 dark:bg-primary/10 text-slate-700 dark:text-slate-200 hover:bg-primary/20'}`}
+            >
+              <Grid className="w-5 h-5" />
+              All Services
+            </button>
+            
+            {isLoadingCategories ? (
+              <span className="text-slate-500 text-sm animate-pulse px-4 shrink-0">Loading categories...</span>
+            ) : (
+              categories.map(cat => (
+                <button 
+                  key={cat.id}
+                  onClick={() => setSelectedCategoryId(cat.id)}
+                  className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-5 font-semibold text-sm transition-all focus:outline-none ${selectedCategoryId === cat.id ? 'bg-primary text-background-dark' : 'bg-slate-200 dark:bg-primary/10 text-slate-700 dark:text-slate-200 hover:bg-primary/20'}`}
+                >
+                  {getCategoryIcon(cat.name)}
+                  {cat.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
 
-    // ==========================================
-    // HANDLERS
-    // ==========================================
-    const handleCategorySelect = (categoryId: string | null) => {
-        setSelectedCategoryId(categoryId);
-        setIsDropdownOpen(false);
-        setCategorySearch('');
-    };
-
-    const clearCategoryFilter = () => {
-        setSelectedCategoryId(null);
-        setCategorySearch('');
-    };
-
-    // ==========================================
-    // RENDER
-    // ==========================================
-    return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-
-            {/* Header */}
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-zinc-300 hover:text-white transition-colors">
-                            <ArrowLeft size={20} />
-                        </Link>
-                        <h1 className="text-xl font-bold tracking-tight">Marketplace Listings</h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Link href="/dashboard/my-orders">
-                            <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white hover:bg-zinc-700">
-                                <ShoppingBag size={16} className="mr-2" />
-                                My Purchases
-                            </Button>
-                        </Link>
-                        <Link href="/dashboard">
-                            <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white hover:bg-zinc-700">
-                                <LayoutGrid size={16} className="mr-2" />
-                                Dashboard
-                            </Button>
-                        </Link>
-                    </div>
+        {/* Listing Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up stagger-4">
+          {isLoadingListings ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 h-[380px] animate-pulse flex flex-col p-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl mb-6"></div>
+                <div className="w-24 h-3 bg-primary/20 rounded mb-3"></div>
+                <div className="w-full h-6 bg-slate-200 dark:bg-slate-700 rounded mb-8"></div>
+                <div className="mt-auto pt-6 border-t border-primary/5 flex justify-between">
+                  <div className="w-16 h-8 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                  <div className="w-24 h-8 bg-primary/20 rounded"></div>
                 </div>
-            </header>
-
-            {/* Main Content */}
-            <div className="container mx-auto px-6 py-8 relative z-10">
-
-                {/* Search & Filter */}
-                <div className="relative z-20 flex flex-col md:flex-row gap-4 mb-8 bg-zinc-800/40 p-4 rounded-2xl border border-zinc-700/80 backdrop-blur-sm">
-                    {/* Search Input */}
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                        <Input
-                            placeholder="Search listings..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="pl-10 bg-zinc-900/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 rounded-xl h-11 transition-all"
-                        />
-                    </div>
-
-                    {/* Category Dropdown */}
-                    <div className="relative w-full md:w-72 flex gap-2">
-                        {/* Dropdown Trigger */}
-                        <button
-                            type="button"
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex-1 flex items-center justify-between bg-zinc-900/50 border border-zinc-700 text-white rounded-xl h-11 px-4 transition-all hover:border-zinc-600 focus:border-indigo-500/50"
-                        >
-                            <span className={selectedCategory ? 'text-white' : 'text-zinc-500'}>
-                                {selectedCategory ? selectedCategory.name : 'All Categories'}
-                            </span>
-                            <ChevronDown size={18} className={`text-zinc-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {/* Clear Button (separate, not nested) */}
-                        {selectedCategory && (
-                            <button
-                                type="button"
-                                onClick={clearCategoryFilter}
-                                className="h-11 w-11 flex items-center justify-center bg-zinc-900/50 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 rounded-xl transition-all"
-                                aria-label="Clear category filter"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-
-                        {/* Dropdown Panel */}
-                        {isDropdownOpen && (
-                            <div className="absolute z-30 w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl overflow-hidden">
-                                {/* Search within dropdown */}
-                                <div className="p-2 border-b border-zinc-700">
-                                    <Input
-                                        placeholder="Search categories..."
-                                        value={categorySearch}
-                                        onChange={(e) => setCategorySearch(e.target.value)}
-                                        className="bg-zinc-900/50 border-zinc-600 text-white placeholder:text-zinc-500 h-9 text-sm rounded-lg"
-                                        autoFocus
-                                    />
-                                </div>
-
-                                {/* Category Options */}
-                                <div className="max-h-48 overflow-y-auto">
-                                    {/* "All Categories" option */}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleCategorySelect(null)}
-                                        className={`w-full text-left py-3 px-4 hover:bg-zinc-700 transition-colors ${!selectedCategoryId ? 'bg-indigo-500/10 text-indigo-300' : 'text-zinc-200'
-                                            }`}
-                                    >
-                                        All Categories
-                                    </button>
-
-                                    {/* Filtered categories */}
-                                    {filteredCategories.length === 0 && categorySearch && (
-                                        <div className="py-3 px-4 text-zinc-400 text-sm">No categories found</div>
-                                    )}
-                                    {filteredCategories.map((category) => (
-                                        <button
-                                            key={category.id}
-                                            type="button"
-                                            onClick={() => handleCategorySelect(category.id)}
-                                            className={`w-full text-left py-3 px-4 hover:bg-zinc-700 transition-colors ${category.id === selectedCategoryId ? 'bg-indigo-500/10 text-indigo-300' : 'text-zinc-200'
-                                                }`}
-                                        >
-                                            {category.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Active Filter Badge */}
-                {selectedCategory && (
-                    <div className="mb-6 flex items-center gap-2">
-                        <span className="text-sm text-zinc-400">Filtered by:</span>
-                        <span className="px-3 py-1 bg-indigo-500/10 text-indigo-300 rounded-full text-sm flex items-center gap-2 border border-indigo-500/20">
-                            {selectedCategory.name}
-                            <button onClick={clearCategoryFilter} className="hover:text-white transition-colors">
-                                <X size={14} />
-                            </button>
-                        </span>
-                    </div>
-                )}
-
-                {/* Listings Grid */}
-                {isLoading ? (
-                    <ListingSkeleton />
-                ) : error ? (
-                    <p className="text-center py-20 text-red-400">Failed to load listings</p>
-                ) : filteredListings.length === 0 ? (
-                    <div className="text-center py-20">
-                        <p className="text-zinc-400 text-lg">No listings found matching your criteria</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredListings.map((listing) => (
-                                <Link key={listing.id} href={`/listings/${listing.id}`} className="block group h-full">
-                                    <Card className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm h-full hover:border-indigo-500/50 hover:bg-zinc-800/60 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 overflow-hidden">
-                                        <CardHeader>
-                                            <div className="flex justify-between items-start gap-2">
-                                                <CardTitle className="line-clamp-1 text-lg font-semibold text-zinc-50 group-hover:text-indigo-300 transition-colors">{listing.title}</CardTitle>
-                                                <span className="shrink-0 px-2 py-1 rounded-md bg-zinc-700 text-zinc-300 text-xs font-medium border border-zinc-600">{listing.category?.name || 'Uncategorized'}</span>
-                                            </div>
-                                            <CardDescription className="line-clamp-2 text-zinc-300 mt-2 text-sm">
-                                                {listing.description}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="flex justify-between items-end mt-2">
-                                                <div>
-                                                    <p className="text-xs text-zinc-400 mb-1">Price</p>
-                                                    <span className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
-                                                        {listing.price
-                                                            ? `$${listing.price.toLocaleString()}`
-                                                            : 'Contact for Quote'
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-xs text-zinc-400">Seller</p>
-                                                    <p className="text-sm text-zinc-200 font-medium">
-                                                        {listing.seller?.name || 'Unknown'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* Pagination */}
-                        {pagination && pagination.totalPages > 1 && (
-                            <div className="flex justify-center mt-12">
-                                <div className="flex items-center gap-3 bg-zinc-800/40 p-4 rounded-xl border border-zinc-700 backdrop-blur-sm">
-                                    <Button
-                                        variant="outline"
-                                        disabled={page === 1}
-                                        onClick={() => setPage(page - 1)}
-                                        className="border-zinc-600 bg-transparent text-zinc-200 hover:text-white hover:bg-zinc-700 w-24"
-                                    >
-                                        Previous
-                                    </Button>
-                                    <span className="px-4 py-2 text-sm text-zinc-300 flex items-center">
-                                        Page <span className="text-white font-medium mx-1">{page}</span> of <span className="text-white font-medium mx-1">{pagination.totalPages}</span>
-                                    </span>
-                                    <Button
-                                        variant="outline"
-                                        disabled={page === pagination.totalPages}
-                                        onClick={() => setPage(page + 1)}
-                                        className="border-zinc-600 bg-transparent text-zinc-200 hover:text-white hover:bg-zinc-700 w-24"
-                                    >
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
+              </div>
+            ))
+          ) : filteredListings.length === 0 ? (
+            <div className="col-span-full py-20 text-center text-slate-500">
+              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No services found matching your criteria.</p>
             </div>
-        </div >
-    );
+          ) : (
+            filteredListings.map((listing) => (
+              <div key={listing.id} className="group flex flex-col bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 hover:border-primary/40 transition-all duration-300 abstract-bg shadow-sm hover:shadow-md">
+                <div className="p-6 flex flex-col flex-1 relative">
+                  
+                  {/* Category Image Mapping / Placeholder */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                       {listing.images && listing.images.length > 0 ? (
+                         <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+                       ) : (
+                         <Briefcase className="w-6 h-6" />
+                       )}
+                    </div>
+                  </div>
+                  
+                  {/* Titles */}
+                  <div className="mb-6">
+                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest mb-1 line-clamp-1">
+                      {listing.category?.name || 'Service'}
+                    </p>
+                    <h3 className="text-slate-900 dark:text-white text-xl font-extrabold leading-tight font-nexa-style group-hover:text-primary transition-colors line-clamp-2">
+                      {listing.title}
+                    </h3>
+                  </div>
+                  
+                  {/* Seller Profiling */}
+                  <div className="flex items-center gap-3 mb-8 mt-auto pt-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/20 text-primary font-bold text-xs uppercase">
+                      {listing.seller?.name ? listing.seller.name.substring(0,2) : 'VN'}
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-tighter">Vendor</p>
+                      <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold truncate max-w-[120px]">
+                        {listing.seller?.name || 'Network Vendor'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Pricing and Action */}
+                  <div className="mt-auto flex items-center justify-between pt-6 border-t border-primary/5">
+                    <div className="flex flex-col">
+                      <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">
+                        {listing.listingType === 'QUOTE' ? 'Pricing' : 'Starting at'}
+                      </p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white font-nexa-style">
+                        {listing.price ? `$${listing.price.toLocaleString()}` : 'Quote'}
+                      </p>
+                    </div>
+                    <Link href={`/listings/${listing.id}`} className="bg-primary text-background-dark px-4 py-2 rounded-lg font-bold text-sm hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all">
+                      View Details
+                    </Link>
+                  </div>
+
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Pagination Controls */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-12 flex justify-center items-center gap-4 animate-fade-in-up">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1 || isFetching}
+              className="px-6 py-2.5 rounded-lg font-bold text-sm bg-slate-200 dark:bg-[#252a1a] text-slate-700 dark:text-slate-200 hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all border border-primary/10"
+            >
+              Previous
+            </button>
+            <span className="text-slate-600 dark:text-slate-400 font-bold text-sm bg-slate-200/50 dark:bg-background-dark px-4 py-2 rounded-lg border border-primary/5">
+              Page {currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+              disabled={currentPage === pagination.totalPages || isFetching}
+              className="px-6 py-2.5 rounded-lg font-bold text-sm bg-slate-200 dark:bg-[#252a1a] text-slate-700 dark:text-slate-200 hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all border border-primary/10"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-auto border-t border-primary/10 px-6 py-10 lg:px-20 bg-background-light dark:bg-background-dark">
+        <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-primary/20 rounded flex items-center justify-center text-primary">
+              <span className="font-bold text-xs leading-none">V</span>
+            </div>
+            <span className="font-bold text-slate-900 dark:text-white font-nexa-style">Verchool B2B</span>
+          </div>
+          <p className="text-slate-500 text-sm">© 2026 Verchool Marketplace. All rights reserved.</p>
+          <div className="flex gap-8">
+            <Link href="/" className="text-slate-500 hover:text-primary text-sm font-medium transition-colors">Privacy</Link>
+            <Link href="/" className="text-slate-500 hover:text-primary text-sm font-medium transition-colors">Terms</Link>
+            <Link href="/" className="text-slate-500 hover:text-primary text-sm font-medium transition-colors">Help Center</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }

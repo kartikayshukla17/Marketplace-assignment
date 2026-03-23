@@ -10,10 +10,11 @@ import { ListingType, ListingStatus } from '../types/enums.js';
 
 // GET /api/listings (Public - Active listings only)
 export const getListings = catchAsync(async (req: Request, res: Response) => {
-    const { search, page, limit } = req.query;
+    const { search, categoryId, page, limit } = req.query;
 
     const result = await listingService.findActiveListings({
         search: typeof search === 'string' ? search : undefined,
+        categoryId: typeof categoryId === 'string' ? categoryId : undefined,
         page: page ? parseInt(page as string) : undefined,
         limit: limit ? parseInt(limit as string) : undefined,
     });

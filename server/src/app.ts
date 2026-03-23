@@ -11,6 +11,7 @@ import listingRoutes from './routes/listingRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import activityRoutes from './routes/activityRoutes.js';
 
 // Middlewares
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -45,6 +46,7 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/activities', activityRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

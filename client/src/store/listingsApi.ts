@@ -4,6 +4,7 @@ import type { Listing, ApiResponse, PaginatedResponse } from '@/types';
 
 interface ListingsQuery {
     search?: string;
+    categoryId?: string;
     page?: number;
     limit?: number;
 }

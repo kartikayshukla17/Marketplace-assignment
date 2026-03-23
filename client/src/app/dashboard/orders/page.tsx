@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Package, ArrowLeft, DollarSign } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -53,99 +54,96 @@ function SellerOrdersContent() {
         }
     };
 
-
-
-    if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (isLoading) return (
+        <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-1/4 -translate-y-1/2 w-[800px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 relative z-10 layout-container flex grow flex-col">
+            <Navbar />
 
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-zinc-300 hover:text-white transition-colors">
-                            <ArrowLeft size={20} />
-                        </Link>
-                        <h1 className="text-xl font-bold tracking-tight">Received Orders</h1>
-                    </div>
+            <div className="border-b border-primary/5 bg-background-light/40 dark:bg-[#1c2012]/40 animate-fade-in-up stagger-1">
+                <div className="container mx-auto px-6 py-6 flex flex-col gap-2">
+                    <Link href="/dashboard" className="text-slate-500 hover:text-primary transition-colors inline-flex items-center gap-2 text-sm font-bold w-fit uppercase tracking-widest">
+                        <ArrowLeft size={16} /> Back to Dashboard
+                    </Link>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style">Received Orders</h1>
                 </div>
-            </header>
+            </div>
 
-            <main className="container mx-auto px-6 py-8 relative z-10">
+            <main className="container mx-auto px-6 py-10 relative z-10 flex-1 animate-fade-in-up stagger-2">
                 {orders.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mb-4 border border-zinc-700">
-                            <Package size={32} className="text-zinc-500" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-200/20 dark:bg-[#252a1a]/40 rounded-2xl border border-primary/5 border-dashed">
+                        <div className="w-16 h-16 bg-slate-200 dark:bg-background-dark rounded-full flex items-center justify-center mb-6">
+                            <Package size={32} className="text-slate-500" />
                         </div>
-                        <h3 className="text-lg font-medium text-white">No orders yet</h3>
-                        <p className="text-zinc-300 mt-1 max-w-sm">When buyers purchase your listings, the orders will appear here for your review.</p>
+                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style mb-2">No orders yet</h3>
+                        <p className="text-slate-500 mt-1 max-w-sm font-medium">When buyers purchase your listings, the orders will appear here for your review.</p>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid gap-6">
                         {orders.map((order) => (
-                            <Card key={order.id} className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm overflow-hidden hover:border-zinc-600 transition-colors">
-                                <CardHeader className="flex flex-row items-start justify-between pb-4 border-b border-zinc-700/50 bg-zinc-800/20">
+                            <Card key={order.id} className="bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 abstract-bg shadow-sm">
+                                <CardHeader className="flex flex-row items-start justify-between pb-6 p-8 border-b border-primary/5">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-lg font-semibold text-white">{order.listing?.title || 'Unknown Listing'}</CardTitle>
-                                        <CardDescription className="text-zinc-300 flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-zinc-600" />
-                                            From: <span className="text-zinc-200">{order.buyer?.name}</span>
-                                            <span className="text-zinc-400 text-xs ml-1">({order.buyer?.email})</span>
+                                        <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white font-nexa-style mb-2">{order.listing?.title || 'Unknown Listing'}</CardTitle>
+                                        <CardDescription className="text-slate-500 flex items-center gap-2 font-bold text-xs uppercase tracking-widest">
+                                            <span className="w-2 h-2 rounded-full bg-primary" />
+                                            From: <span className="text-slate-700 dark:text-slate-300">{order.buyer?.name}</span>
+                                            <span className="text-slate-400 normal-case tracking-normal ml-1">({order.buyer?.email})</span>
                                         </CardDescription>
                                     </div>
-                                    <div className={`px-3 py-1 rounded-full text-xs font-medium border ${order.status === 'REQUESTED' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                        order.status === 'ACCEPTED' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                                            order.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                'bg-red-500/10 text-red-400 border-red-500/20'
+                                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${order.status === 'REQUESTED' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                        order.status === 'ACCEPTED' ? 'bg-primary/20 text-primary border-primary/20' :
+                                            order.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                'bg-red-500/10 text-red-500 border-red-500/20'
                                         }`}>
                                         {order.status}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                            <div className="flex items-center gap-6">
-                                                <div>
-                                                    <p className="text-sm text-zinc-400 mb-1">Offer Price</p>
-                                                    <p className="text-2xl font-bold text-white">
-                                                        {order.offerPrice ? `$${order.offerPrice.toLocaleString()}` : (
-                                                            <span className="text-zinc-500 text-lg">Awaiting Quote</span>
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                {order.message && (
-                                                    <div className="max-w-md p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                                                        <p className="text-sm text-zinc-300 italic">"{order.message}"</p>
-                                                    </div>
-                                                )}
+                                <CardContent className="p-8">
+                                    <div className="flex flex-col gap-6">
+                                        <div className="flex flex-col md:flex-row gap-6">
+                                            <div className="flex-1">
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Offer Price</p>
+                                                <p className="text-4xl font-black text-slate-900 dark:text-white font-nexa-style">
+                                                    {order.offerPrice ? `$${order.offerPrice.toLocaleString()}` : (
+                                                        <span className="text-primary text-xl">Awaiting Quote</span>
+                                                    )}
+                                                </p>
                                             </div>
+                                            {order.message && (
+                                                <div className="flex-1 p-5 bg-slate-200/50 dark:bg-black/20 rounded-xl border border-primary/5">
+                                                    <p className="text-sm text-slate-600 dark:text-slate-300 italic font-medium">"{order.message}"</p>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Provide Quote Form - Only for quote requests without price */}
+                                        {/* Provide Quote Form */}
                                         {order.status === 'REQUESTED' && !order.offerPrice && (
-                                            <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4">
-                                                <p className="text-sm text-indigo-300 mb-3 font-medium flex items-center gap-2">
+                                            <div className="bg-slate-200/50 dark:bg-background-dark border border-primary/20 rounded-xl p-6">
+                                                <p className="text-sm text-primary mb-4 font-bold flex items-center gap-2 uppercase tracking-widest">
                                                     <DollarSign size={16} />
                                                     Provide a quote for this request
                                                 </p>
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-4">
                                                     <div className="relative flex-1 max-w-xs">
-                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
+                                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                                                         <Input
                                                             type="number"
                                                             step="0.01"
                                                             placeholder="Enter price"
                                                             value={quotePrices[order.id] || ''}
                                                             onChange={(e) => setQuotePrices(prev => ({ ...prev, [order.id]: e.target.value }))}
-                                                            className="pl-8 bg-zinc-900/50 border-zinc-700 text-white"
+                                                            className="pl-8 bg-slate-100 dark:bg-[#252a1a] border-primary/20 text-slate-900 dark:text-white focus-visible:ring-primary h-12 font-bold"
                                                         />
                                                     </div>
                                                     <Button
                                                         onClick={() => handleProvideQuote(order.id)}
                                                         disabled={providingQuote}
-                                                        className="bg-indigo-600 hover:bg-indigo-500 text-white"
+                                                        className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold h-12 px-8"
                                                     >
                                                         {providingQuote ? 'Sending...' : 'Send Quote'}
                                                     </Button>
@@ -154,7 +152,7 @@ function SellerOrdersContent() {
                                         )}
 
                                         {/* Action Buttons */}
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-4 pt-4 border-t border-primary/5">
                                             {/* For FIXED listings: Seller can Accept/Reject */}
                                             {order.status === 'REQUESTED' && order.offerPrice && order.listing?.listingType === 'FIXED' && (
                                                 <>
@@ -162,23 +160,23 @@ function SellerOrdersContent() {
                                                         <AlertDialogTrigger asChild>
                                                             <Button
                                                                 disabled={updating}
-                                                                className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 border-0"
+                                                                className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold h-12 px-8"
                                                             >
                                                                 Accept Order
                                                             </Button>
                                                         </AlertDialogTrigger>
-                                                        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+                                                        <AlertDialogContent className="bg-background-light dark:bg-background-dark border-primary/10">
                                                             <AlertDialogHeader>
-                                                                <AlertDialogTitle className="text-white">Accept this order?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-zinc-400">
+                                                                <AlertDialogTitle className="text-slate-900 dark:text-white font-nexa-style text-xl">Accept this order?</AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
                                                                     This will confirm the order. Ensure you have the stock ready to ship.
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
-                                                                <AlertDialogCancel className="bg-zinc-800 text-white border-zinc-700 hover:bg-zinc-700">Cancel</AlertDialogCancel>
+                                                                <AlertDialogCancel className="bg-slate-200 dark:bg-[#252a1a] text-slate-900 dark:text-white border-primary/10 hover:bg-slate-300 dark:hover:bg-primary/10 font-bold">Cancel</AlertDialogCancel>
                                                                 <AlertDialogAction
                                                                     onClick={() => handleStatusUpdate(order.id, 'ACCEPTED')}
-                                                                    className="bg-indigo-600 text-white hover:bg-indigo-700 border-0"
+                                                                    className="bg-primary text-background-dark hover:bg-primary/80 border-0 font-bold"
                                                                 >
                                                                     Confirm Accept
                                                                 </AlertDialogAction>
@@ -191,23 +189,23 @@ function SellerOrdersContent() {
                                                             <Button
                                                                 variant="ghost"
                                                                 disabled={updating}
-                                                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10 font-bold h-12 px-6"
                                                             >
                                                                 Reject
                                                             </Button>
                                                         </AlertDialogTrigger>
-                                                        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+                                                        <AlertDialogContent className="bg-background-light dark:bg-background-dark border-primary/10">
                                                             <AlertDialogHeader>
-                                                                <AlertDialogTitle className="text-white">Reject this order?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-zinc-400">
+                                                                <AlertDialogTitle className="text-slate-900 dark:text-white font-nexa-style text-xl">Reject this order?</AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
                                                                     This action cannot be undone. The buyer will be notified that you cannot fulfill this request.
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
-                                                                <AlertDialogCancel className="bg-zinc-800 text-white border-zinc-700 hover:bg-zinc-700">Cancel</AlertDialogCancel>
+                                                                <AlertDialogCancel className="bg-slate-200 dark:bg-[#252a1a] text-slate-900 dark:text-white border-primary/10 hover:bg-slate-300 dark:hover:bg-primary/10 font-bold">Cancel</AlertDialogCancel>
                                                                 <AlertDialogAction
                                                                     onClick={() => handleStatusUpdate(order.id, 'REJECTED')}
-                                                                    className="bg-red-600 text-white hover:bg-red-700 border-0"
+                                                                    className="bg-red-500 hover:bg-red-600 text-white border-0 font-bold"
                                                                 >
                                                                     Confirm Reject
                                                                 </AlertDialogAction>
@@ -219,7 +217,7 @@ function SellerOrdersContent() {
 
                                             {/* For QUOTE listings: Show waiting message */}
                                             {order.status === 'REQUESTED' && order.offerPrice && order.listing?.listingType === 'QUOTE' && (
-                                                <p className="text-sm text-amber-400">
+                                                <p className="text-sm text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-lg">
                                                     ⏳ Waiting for buyer to accept your quote...
                                                 </p>
                                             )}
@@ -228,14 +226,16 @@ function SellerOrdersContent() {
                                                 <Button
                                                     onClick={() => handleStatusUpdate(order.id, 'COMPLETED')}
                                                     disabled={updating}
-                                                    className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 border-0"
+                                                    className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold h-12 px-8"
                                                 >
                                                     Mark as Complete
                                                 </Button>
                                             )}
 
                                             {['COMPLETED', 'REJECTED'].includes(order.status) && (
-                                                <span className="text-sm text-zinc-400 italic">No further actions available</span>
+                                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-200 dark:bg-black/20 px-4 py-2 rounded-lg flex items-center">
+                                                    No further actions available
+                                                </span>
                                             )}
                                         </div>
                                     </div>

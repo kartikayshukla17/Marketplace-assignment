@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Edit, Trash2, User, Tag, DollarSign, Calendar, Pause, Play, ShoppingCart, FileText } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
 
 export default function ListingDetailPage() {
     const params = useParams();
@@ -22,7 +23,7 @@ export default function ListingDetailPage() {
     const [createOrder, { isLoading: isOrdering }] = useCreateOrderMutation();
 
     const listing = data?.data?.listing;
-    const user = userData?.data; // Extract user data for easier access
+    const user = userData?.data; 
     const isOwner = user?.id === listing?.sellerId;
     const isLoggedIn = !!user?.id;
 
@@ -66,19 +67,19 @@ export default function ListingDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
         );
     }
 
     if (error || !listing) {
         return (
-            <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
-                <h2 className="text-xl font-bold mb-2">Listing Not Found</h2>
-                <p className="text-zinc-300 mb-4">This listing may have been removed or doesn't exist.</p>
+            <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col items-center justify-center text-slate-900 dark:text-white">
+                <h2 className="text-xl font-extrabold font-nexa-style mb-2">Listing Not Found</h2>
+                <p className="text-slate-500 mb-4 font-medium">This listing may have been removed or doesn't exist.</p>
                 <Link href="/listings">
-                    <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent">
+                    <Button className="bg-primary/20 text-primary hover:bg-primary hover:text-background-dark transition-all font-bold font-nexa-style">
                         Back to Listings
                     </Button>
                 </Link>
@@ -87,29 +88,27 @@ export default function ListingDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 relative z-10 layout-container flex grow flex-col">
+            <Navbar />
 
-            {/* Header */}
-            <header className="border-b border-zinc-700 bg-zinc-800/50 backdrop-blur-md sticky top-0 z-50">
+            {/* Listing Context Actions */}
+            <div className="border-b border-primary/5 bg-background-light/40 dark:bg-[#1c2012]/40 animate-fade-in-up stagger-1">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href="/listings" className="text-zinc-300 hover:text-white transition-colors">
-                            <ArrowLeft size={20} />
+                    <div className="flex flex-col gap-2">
+                        <Link href="/listings" className="text-slate-500 hover:text-primary transition-colors inline-flex items-center gap-2 text-sm font-bold w-fit uppercase tracking-widest">
+                            <ArrowLeft size={16} /> Back to Listings
                         </Link>
-                        <h1 className="text-xl font-bold tracking-tight">Listing Details</h1>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-nexa-style">Listing Details</h1>
                     </div>
                     {isOwner && (
                         <div className="flex gap-3">
                             {listing.status !== 'DRAFT' && (
                                 <Button
-                                    variant="outline"
                                     onClick={handleToggleStatus}
                                     disabled={isUpdating}
-                                    className={`gap-2 bg-transparent ${listing.status === 'ACTIVE'
-                                        ? 'border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300'
-                                        : 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                                    className={`font-bold gap-2 ${listing.status === 'ACTIVE'
+                                        ? 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10 bg-transparent'
+                                        : 'border-primary/50 text-primary hover:bg-primary/10 bg-transparent'
                                         }`}
                                 >
                                     {listing.status === 'ACTIVE' ? (
@@ -120,16 +119,15 @@ export default function ListingDetailPage() {
                                 </Button>
                             )}
                             <Link href={`/listings/${id}/edit`}>
-                                <Button variant="outline" className="border-zinc-600 text-zinc-200 hover:text-white hover:bg-zinc-700 bg-transparent gap-2">
+                                <Button variant="outline" className="border-primary/20 text-slate-700 dark:text-slate-200 hover:border-primary transition-colors gap-2 font-bold h-10 bg-transparent">
                                     <Edit size={16} />
                                     Edit
                                 </Button>
                             </Link>
                             <Button
-                                variant="ghost"
                                 onClick={handleDelete}
                                 disabled={isDeleting}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2"
+                                className="bg-transparent text-red-500 hover:text-red-400 hover:bg-red-500/10 border border-red-500/20 gap-2 font-bold h-10"
                             >
                                 <Trash2 size={16} />
                                 Delete
@@ -137,91 +135,91 @@ export default function ListingDetailPage() {
                         </div>
                     )}
                 </div>
-            </header>
+            </div>
 
             {/* Main Content */}
-            <main className="container mx-auto px-6 py-10 relative z-10 max-w-3xl">
-                <Card className="bg-zinc-800/40 border-zinc-700/80 backdrop-blur-sm overflow-hidden">
-                    <CardHeader className="border-b border-zinc-700/50 bg-zinc-800/20">
+            <main className="container mx-auto px-6 py-10 relative z-10 max-w-3xl flex-1 animate-fade-in-up stagger-2">
+                <Card className="bg-slate-100 dark:bg-[#252a1a] rounded-xl overflow-hidden border border-primary/10 abstract-bg shadow-sm">
+                    <CardHeader className="border-b border-primary/5 p-8 pb-6">
                         <div className="flex justify-between items-start gap-4">
                             <div className="flex-1">
-                                <CardTitle className="text-2xl font-bold text-white mb-2">{listing.title}</CardTitle>
-                                <CardDescription className="text-zinc-300 flex items-center gap-4 flex-wrap">
-                                    <span className="flex items-center gap-1">
-                                        <Tag size={14} />
+                                <CardTitle className="text-3xl font-extrabold text-slate-900 dark:text-white mb-4 line-clamp-2 font-nexa-style leading-tight">{listing.title}</CardTitle>
+                                <CardDescription className="flex items-center gap-4 flex-wrap">
+                                    <span className="flex items-center gap-2 font-bold bg-primary/10 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-widest text-primary">
+                                        <Tag size={12} />
                                         {listing.category?.name || 'Uncategorized'}
                                     </span>
-                                    <span className="flex items-center gap-1">
-                                        <Calendar size={14} />
+                                    <span className="flex items-center gap-2 font-bold bg-slate-200 dark:bg-black/20 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                        <Calendar size={12} />
                                         {new Date(listing.createdAt).toLocaleDateString()}
                                     </span>
                                 </CardDescription>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-xs font-medium border ${listing.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                listing.status === 'DRAFT' ? 'bg-zinc-400/10 text-zinc-300 border-zinc-400/20' :
-                                    'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            <div className={`px-4 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest border ${listing.status === 'ACTIVE' ? 'bg-primary/10 text-primary border-primary/20' :
+                                listing.status === 'DRAFT' ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700' :
+                                    'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                 }`}>
                                 {listing.status}
                             </div>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="pt-6 space-y-6">
+                    <CardContent className="p-8 space-y-8 relative z-10">
                         {/* Price */}
-                        <div className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700">
-                            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-                                <DollarSign size={20} />
+                        <div className="flex items-center gap-4 p-5 bg-slate-200/50 dark:bg-black/20 rounded-xl border border-primary/5">
+                            <div className="p-3 bg-primary/20 rounded-lg text-primary">
+                                <DollarSign size={24} />
                             </div>
                             <div>
-                                <p className="text-xs text-zinc-400">Price</p>
-                                <p className="text-2xl font-bold text-white">
+                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Price</p>
+                                <p className="text-3xl font-black text-slate-900 dark:text-white font-nexa-style">
                                     {listing.price
                                         ? `$${listing.price.toLocaleString()} `
-                                        : <span className="text-indigo-400">Contact for Quote</span>
+                                        : <span className="text-primary text-xl">Contact for Quote</span>
                                     }
-                                    {listing.price && <span className="text-sm text-zinc-400 font-normal">{listing.currency}</span>}
+                                    {listing.price && <span className="text-sm text-slate-500 font-bold ml-1 uppercase">{listing.currency}</span>}
                                 </p>
                             </div>
                         </div>
 
                         {/* Description */}
                         <div>
-                            <h3 className="text-sm text-zinc-400 mb-2">Description</h3>
-                            <p className="text-zinc-200 leading-relaxed whitespace-pre-wrap">{listing.description}</p>
+                            <h3 className="text-sm text-slate-900 dark:text-white font-extrabold mb-3 font-nexa-style">Description</h3>
+                            <p className="text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">{listing.description}</p>
                         </div>
 
                         {/* Seller Info */}
                         {listing.seller && (
-                            <div className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700">
-                                <div className="p-2 bg-zinc-700 rounded-lg text-zinc-300">
-                                    <User size={20} />
+                            <div className="flex items-center gap-4 p-5 bg-slate-200/50 dark:bg-black/20 rounded-xl border border-primary/5">
+                                <div className="p-3 bg-slate-300 dark:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
+                                    <User size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-zinc-400">Seller</p>
-                                    <p className="text-white font-medium">{listing.seller.name}</p>
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Seller</p>
+                                    <p className="text-slate-900 dark:text-white font-extrabold font-nexa-style text-lg">{listing.seller.name}</p>
                                 </div>
                             </div>
                         )}
 
                         {/* Actions for Non-Owners */}
                         {!isOwner && listing.status === 'ACTIVE' && user?.role !== 'ADMIN' && (
-                            <div className="pt-4 border-t border-zinc-700">
+                            <div className="pt-8 border-t border-primary/10">
                                 {listing.listingType === 'FIXED' ? (
                                     <Button
                                         onClick={handlePurchaseRequest}
                                         disabled={isOrdering}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-12 shadow-lg shadow-indigo-600/20 border-0 gap-2"
+                                        className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold w-full h-14 gap-3 text-lg rounded-xl"
                                     >
-                                        <ShoppingCart size={18} />
+                                        <ShoppingCart size={20} />
                                         {isOrdering ? 'Sending Request...' : `Purchase - $${listing.price?.toLocaleString()}`}
                                     </Button>
                                 ) : (
                                     <Button
                                         onClick={handlePurchaseRequest}
                                         disabled={isOrdering}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-12 shadow-lg shadow-indigo-600/20 border-0 gap-2"
+                                        className="bg-primary text-background-dark hover:shadow-[0_0_15px_rgba(211,235,148,0.4)] transition-all font-bold w-full h-14 gap-3 text-lg rounded-xl"
                                     >
-                                        <FileText size={18} />
+                                        <FileText size={20} />
                                         {isOrdering ? 'Sending Request...' : 'Request Quote'}
                                     </Button>
                                 )}
